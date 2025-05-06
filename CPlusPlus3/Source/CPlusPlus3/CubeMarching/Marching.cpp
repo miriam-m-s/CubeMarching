@@ -1,4 +1,6 @@
 ﻿#include "Marching.h"
+
+#include "FrameTypes.h"
 #include "ProceduralMeshComponent.h"
 #include "Components/InputComponent.h"
 	
@@ -135,16 +137,15 @@ void AMarching::MarchCube(FVector pos,float* cube)
 
 			FVector vert1 =pos + EdgeTable[indice][0];
 			FVector vert2 =pos+ EdgeTable[indice][1];
-			FVector vertice = vert1 + (vert2 - vert1) / 2.0f; // Interpolación correcta
+			float noise1=TerrainMap[getTerrainIndex(vert1.X, vert1.Y, vert1.Z)];
+			float noise2=TerrainMap[getTerrainIndex(vert2.X,vert2.Y, vert2.Z)];
+			float t = (SurfaceLevel - noise1) / (noise2 - noise1); 
+			FVector vertice = FMath::Lerp(vert1, vert2, t);
 			Vertices.Add(vertice*100);
 			Triangles.Add(Vertices.Num()-1 );
 			edgeIndex++;
 		}
 
-		// Ahora que añadimos los 3 vértices, añadimos el triángulo
-	
-		
-		
 	}
 }
 
