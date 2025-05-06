@@ -137,6 +137,7 @@ void AMarching::MarchCube(FVector pos,float* cube)
 
 			FVector vert1 =pos + EdgeTable[indice][0];
 			FVector vert2 =pos+ EdgeTable[indice][1];
+			//linear interpolation for smooth terrain
 			float noise1=TerrainMap[getTerrainIndex(vert1.X, vert1.Y, vert1.Z)];
 			float noise2=TerrainMap[getTerrainIndex(vert2.X,vert2.Y, vert2.Z)];
 			float t = (SurfaceLevel - noise1) / (noise2 - noise1); 

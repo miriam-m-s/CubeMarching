@@ -12,7 +12,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="87a2a001-1d87-4e86-b1d3-c109f3d22d15" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.CPlusPlus3/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.CPlusPlus3/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CPlusPlus3/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -142,7 +142,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1746543505219</updated>
-      <workItem from="1746543505220" duration="1681000" />
+      <workItem from="1746543505220" duration="3203000" />
     </task>
     <servers />
   </component>
