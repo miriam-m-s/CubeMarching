@@ -1,0 +1,187 @@
+﻿#include "Marching.h"
+#include "ProceduralMeshComponent.h"
+#include "Components/InputComponent.h"
+	
+#include "Field/FieldSystemNoiseAlgo.h"
+
+#include "GameFramework/PlayerController.h"
+
+AMarching::AMarching():MarchingIndex(0)
+{
+	
+
+
+	Mesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("GeneratedMesh"));
+	RootComponent = Mesh;
+}
+
+void AMarching::BeginPlay()
+{
+	Super::BeginPlay();
+	TerrainMap.SetNum((GridSize.X + 1) * (GridSize.Y + 1) * (GridSize.Z + 1));
+	UE_LOG(LogTemp, Warning, TEXT("Create Terrain"));
+	CreateTerrain();
+	CubeIteration();
+
+}
+void AMarching::OnBKeyPressed()
+{
+
+	
+}
+
+void AMarching::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
+
+
+void AMarching::CreateTerrain()
+{
+	
+	UE_LOG(LogTemp, Warning, TEXT("Terrain Map Size: %d"), TerrainMap.Num());
+	
+	/*
+		This loops iterates over a 3D grid of points 
+		to assign a noise value or density to each voxel corner.
+
+		Example for a 2D slice (X-Z plane), GridSize = 2:
+		
+		Grid of points:
+		
+		o---o---o   --> X (3 points for 2 cells)
+		|   |   |
+		o---o---o
+		|   |   |
+		o---o---o
+		
+		Each "o" is a vertex (corner), and each square formed by 4 "o" points is a cube (in 2D, a cell).
+		To get 2 cubes in X, you need 3 points (2+1).
+		The same applies in 3D.
+
+		This loop prepares those points for later cube generation and marching cubes logic.
+	*/
+
+	for (int x=0;x<GridSize.X+1;x++)
+	{
+		for (int y=0;y<GridSize.Y+1;y++)
+		{
+			for (int z=0;z<GridSize.Z+1;z++)
+			{
+
+				float noise = FMath::PerlinNoise3D(FVector(x/ 16.f * 1.5f + 0.001f,y/ 16.f * 1.5f + 0.001f,z/ 16.f * 1.5f + 0.001f));
+  				TerrainMap[getTerrainIndex(x, y, z)] = noise;
+			}
+		}
+	}
+}
+
+void AMarching::BuildMesh()
+{
+	// UE_LOG(LogTemp, Warning, TEXT("BuildMesh called"));
+	// UE_LOG(LogTemp, Warning, TEXT("Vertices count: %d"), Vertices.Num());
+	// UE_LOG(LogTemp, Warning, TEXT("Triangles count: %d"), Triangles.Num());
+
+	TArray<FVector> normals;
+	TArray<FVector2D> uvs;
+	TArray<FProcMeshTangent> tangents;
+	TArray<FLinearColor> vertexColors;
+
+	// Inicializa las normales, UVs y demás arrays
+	//UE_LOG(LogTemp, Warning, TEXT("Initializing mesh data arrays"));
+	normals.Init(FVector(0, 0, 1), Vertices.Num());
+	uvs.Init(FVector2D(0, 0), Vertices.Num());
+	tangents.Init(FProcMeshTangent(1, 0, 0), Vertices.Num());
+	vertexColors.Init(FLinearColor::White, Vertices.Num());
+
+	// UE_LOG(LogTemp, Warning, TEXT("Calling CreateMeshSection_LinearColor"));
+	// Crea la malla usando los datos
+	Mesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, normals, uvs, vertexColors, tangents, false);
+	// UE_LOG(LogTemp, Warning, TEXT("Mesh section created successfully"));
+}
+
+ int AMarching::GetConfigurationIndex(float* cube)
+{
+	int configIndex = 0;
+	for (int i = 0; i < 8; ++i)
+	{
+		if ( cube[i] > SurfaceLevel) 
+		{
+			//desplazar bits a la izquierda si i es igual 3 0000 1000 y el or "suma" los bits con el anterior
+			configIndex |= (1 << i);
+			
+		}
+	}
+
+	return configIndex; 
+
+
+}
+void AMarching::MarchCube(FVector pos,float* cube)
+{
+	int configIndex = GetConfigurationIndex(cube);
+	if (configIndex == 0 || configIndex == 255) return;
+
+	int edgeIndex = 0;
+	// Genera los vértices y triángulos en base al configIndex
+	for (int i = 0; i < 5; i++)
+	{
+
+		for (int j = 0; j < 3; j++)
+		{
+			int indice = TriangleTable[configIndex][edgeIndex];
+			if (indice == -1) return;
+
+			FVector vert1 =pos + EdgeTable[indice][0];
+			FVector vert2 =pos+ EdgeTable[indice][1];
+			FVector vertice = vert1 + (vert2 - vert1) / 2.0f; // Interpolación correcta
+			Vertices.Add(vertice*100);
+			Triangles.Add(Vertices.Num()-1 );
+			edgeIndex++;
+		}
+
+		// Ahora que añadimos los 3 vértices, añadimos el triángulo
+	
+		
+		
+	}
+}
+
+
+
+void AMarching::CleanMeshData()
+{
+	Vertices.Empty();
+	Triangles.Empty();
+}
+
+const int AMarching::getTerrainIndex( int x, int y, int z)
+{
+	return x + y * (GridSize.X + 1) + z * (GridSize.X + 1) * (GridSize.Y + 1);
+
+}
+
+void AMarching::CubeIteration()
+{
+	CleanMeshData();
+	//iterates for each cube of the grid
+	for (int x=0;x<GridSize.X;x++)
+	{
+		for (int y=0;y<GridSize.Y;y++)
+		{
+			for (int z=0;z<GridSize.Z;z++)
+			{
+				float* cube=new float[8];
+				for (int i = 0; i < 8; i++)
+				{
+					FVector corner = FVector(x, y, z)+ CornerTable[i] ;
+					cube[i] = TerrainMap[getTerrainIndex(corner.X, corner.Y, corner.Z)];
+				}
+			
+				MarchCube(FVector(x,y,z), cube);
+			}
+		}
+	}
+	BuildMesh();
+}
