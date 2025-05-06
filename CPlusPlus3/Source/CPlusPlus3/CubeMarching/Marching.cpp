@@ -7,6 +7,7 @@
 #include "Field/FieldSystemNoiseAlgo.h"
 
 #include "GameFramework/PlayerController.h"
+#include "Operations/EmbedSurfacePath.h"
 
 AMarching::AMarching():MarchingIndex(0)
 {
@@ -21,6 +22,7 @@ void AMarching::BeginPlay()
 {
 	Super::BeginPlay();
 	TerrainMap.SetNum((GridSize.X + 1) * (GridSize.Y + 1) * (GridSize.Z + 1));
+	
 	UE_LOG(LogTemp, Warning, TEXT("Create Terrain"));
 	CreateTerrain();
 	CubeIteration();
@@ -93,6 +95,29 @@ void AMarching::BuildMesh()
 	// Inicializa las normales, UVs y demás arrays
 	//UE_LOG(LogTemp, Warning, TEXT("Initializing mesh data arrays"));
 	normals.Init(FVector(0, 0, 1), Vertices.Num());
+	// normals.SetNum(Vertices.Num());
+	// for (int i = 0; i < Triangles.Num(); i += 3)
+	// {
+	// 	int i0 = Triangles[i];
+	// 	int i1 = Triangles[i + 1];
+	// 	int i2 = Triangles[i + 2];
+	//
+	// 	const FVector& v0 = Vertices[i0];
+	// 	const FVector& v1 = Vertices[i1];
+	// 	const FVector& v2 = Vertices[i2];
+	//
+	// 	FVector faceNormal = FVector::CrossProduct(v1 - v0, v2 - v0).GetSafeNormal();
+	//
+	// 	normals[i0] += -faceNormal;
+	// 	normals[i1] += -faceNormal;
+	// 	normals[i2] += -faceNormal;
+	// }
+	//
+	// // Paso 3: normalizar cada normal de vértice
+	// for (int i = 0; i < normals.Num(); ++i)
+	// {
+	// 	normals[i].Normalize();
+	// }
 	uvs.Init(FVector2D(0, 0), Vertices.Num());
 	tangents.Init(FProcMeshTangent(1, 0, 0), Vertices.Num());
 	vertexColors.Init(FLinearColor::White, Vertices.Num());
@@ -126,10 +151,10 @@ void AMarching::MarchCube(FVector pos,float* cube)
 	if (configIndex == 0 || configIndex == 255) return;
 
 	int edgeIndex = 0;
-	// Genera los vértices y triángulos en base al configIndex
+	// maximo numero de trinagulos que puede haber en una intersecion de un cubo con estas 256 posibles combinociones 
 	for (int i = 0; i < 5; i++)
 	{
-
+		//vertices por triangulo
 		for (int j = 0; j < 3; j++)
 		{
 			int indice = TriangleTable[configIndex][edgeIndex];
@@ -140,11 +165,23 @@ void AMarching::MarchCube(FVector pos,float* cube)
 			//linear interpolation for smooth terrain
 			float noise1=TerrainMap[getTerrainIndex(vert1.X, vert1.Y, vert1.Z)];
 			float noise2=TerrainMap[getTerrainIndex(vert2.X,vert2.Y, vert2.Z)];
-			float t = (SurfaceLevel - noise1) / (noise2 - noise1); 
+			float t = (SurfaceLevel - noise1) / (noise2 - noise1);
+	
 			FVector vertice = FMath::Lerp(vert1, vert2, t);
-			Vertices.Add(vertice*100);
-			Triangles.Add(Vertices.Num()-1 );
+			FVector snapped = vertice.GridSnap(0.01f);
+			int * valor=VertexMap.Find(snapped);
+			if (valor)
+			{
+				Triangles.Add(*valor);
+			}
+			else
+			{
+				Vertices.Add(vertice*100);
+				Triangles.Add(Vertices.Num()-1 );
+				VertexMap.Add(snapped,Vertices.Num()-1);				
+			}
 			edgeIndex++;
+			
 		}
 
 	}
@@ -156,6 +193,7 @@ void AMarching::CleanMeshData()
 {
 	Vertices.Empty();
 	Triangles.Empty();
+	VertexMap.Empty(); 
 }
 
 const int AMarching::getTerrainIndex( int x, int y, int z)

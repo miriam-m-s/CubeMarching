@@ -5,6 +5,7 @@
 #include "GameFramework/Actor.h"
 #include "Marching.generated.h"
 class UProceduralMeshComponent;
+class Chunk;
 UCLASS()
 
 class CPLUSPLUS3_API AMarching : public AActor
@@ -23,6 +24,8 @@ public:
 	int32 MarchingIndex = 1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FIntVector GridSize = FIntVector(30, 30, 30);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FIntVector ChunkSize = FIntVector(10, 10, 10);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float SurfaceLevel=0.0f;
 	
@@ -85,8 +88,8 @@ private:
 
 	void CubeIteration();
 
-
-	
+	TMap<FVector, int32> VertexMap;
+	TArray<Chunk*> chunks;
 	UProceduralMeshComponent* Mesh;
 	TArray<float> TerrainMap;
 	TArray<FVector> Vertices;
