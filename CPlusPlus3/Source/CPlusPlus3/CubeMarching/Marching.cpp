@@ -21,17 +21,43 @@ AMarching::AMarching():MarchingIndex(0)
 void AMarching::BeginPlay()
 {
 	Super::BeginPlay();
+	// TerrainMap.SetNum((GridSize.X + 1) * (GridSize.Y + 1) * (GridSize.Z + 1));
+	//
+	// UE_LOG(LogTemp, Warning, TEXT("Create Terrain"));
+	// CreateTerrain();
+	// CubeIteration();
+
+}
+
+
+
+void AMarching::OnBKeyPressed()
+{
+
+	
+}
+
+void AMarching::GenerateTerrain()
+{
 	TerrainMap.SetNum((GridSize.X + 1) * (GridSize.Y + 1) * (GridSize.Z + 1));
 	
 	UE_LOG(LogTemp, Warning, TEXT("Create Terrain"));
 	CreateTerrain();
 	CubeIteration();
-
 }
-void AMarching::OnBKeyPressed()
-{
 
-	
+void AMarching::DeleteTerrain()
+{
+	CleanMeshData();
+
+	if (Mesh)
+	{
+		Mesh->ClearAllMeshSections(); // Esto borra visualmente la malla del viewport
+	}
+
+	TerrainMap.Empty();
+	UE_LOG(LogTemp, Warning, TEXT("Terrain deleted"));
+
 }
 
 void AMarching::Tick(float DeltaTime)
@@ -84,7 +110,7 @@ void AMarching::CreateTerrain()
 void AMarching::BuildMesh()
 {
 	// UE_LOG(LogTemp, Warning, TEXT("BuildMesh called"));
-	// UE_LOG(LogTemp, Warning, TEXT("Vertices count: %d"), Vertices.Num());
+	 UE_LOG(LogTemp, Warning, TEXT("Vertices count: %d"), Vertices.Num());
 	// UE_LOG(LogTemp, Warning, TEXT("Triangles count: %d"), Triangles.Num());
 
 	TArray<FVector> normals;
@@ -94,30 +120,31 @@ void AMarching::BuildMesh()
 
 	// Inicializa las normales, UVs y demás arrays
 	//UE_LOG(LogTemp, Warning, TEXT("Initializing mesh data arrays"));
-	normals.Init(FVector(0, 0, 1), Vertices.Num());
-	// normals.SetNum(Vertices.Num());
-	// for (int i = 0; i < Triangles.Num(); i += 3)
-	// {
-	// 	int i0 = Triangles[i];
-	// 	int i1 = Triangles[i + 1];
-	// 	int i2 = Triangles[i + 2];
-	//
-	// 	const FVector& v0 = Vertices[i0];
-	// 	const FVector& v1 = Vertices[i1];
-	// 	const FVector& v2 = Vertices[i2];
-	//
-	// 	FVector faceNormal = FVector::CrossProduct(v1 - v0, v2 - v0).GetSafeNormal();
-	//
-	// 	normals[i0] += -faceNormal;
-	// 	normals[i1] += -faceNormal;
-	// 	normals[i2] += -faceNormal;
-	// }
-	//
-	// // Paso 3: normalizar cada normal de vértice
-	// for (int i = 0; i < normals.Num(); ++i)
-	// {
-	// 	normals[i].Normalize();
-	// }
+	//normals.Init(FVector(0, 0, 1), Vertices.Num());
+	normals.SetNum(Vertices.Num());
+	for (int i = 0; i < Triangles.Num(); i += 3)
+	{
+		int i0 = Triangles[i];
+		int i1 = Triangles[i + 1];
+		int i2 = Triangles[i + 2];
+	
+		const FVector& v0 = Vertices[i0];
+		const FVector& v1 = Vertices[i1];
+		const FVector& v2 = Vertices[i2];
+	
+		FVector faceNormal = FVector::CrossProduct(v1 - v0, v2 - v0).GetSafeNormal();
+	
+		normals[i0] += faceNormal;
+		normals[i1] += faceNormal;
+		normals[i2] += faceNormal;
+	}
+	
+	// Paso 3: normalizar cada normal de vértice
+	for (int i = 0; i < normals.Num(); ++i)
+	{
+		normals[i]*=-1;
+		normals[i].Normalize();
+	}
 	uvs.Init(FVector2D(0, 0), Vertices.Num());
 	tangents.Init(FProcMeshTangent(1, 0, 0), Vertices.Num());
 	vertexColors.Init(FLinearColor::White, Vertices.Num());

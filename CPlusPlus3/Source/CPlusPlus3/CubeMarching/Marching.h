@@ -17,7 +17,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
+	
+	
 public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -25,10 +26,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FIntVector GridSize = FIntVector(30, 30, 30);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FIntVector ChunkSize = FIntVector(10, 10, 10);
+	FIntVector ChunkSize = FIntVector(20, 10, 10);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float SurfaceLevel=0.0f;
-	
+	UFUNCTION(CallInEditor, Category = "Marching Cubes")
+	void GenerateTerrain();
+	UFUNCTION(CallInEditor, Category = "Marching Cubes")
+	void DeleteTerrain();
 	virtual void Tick(float DeltaTime) override;
 
 private:
