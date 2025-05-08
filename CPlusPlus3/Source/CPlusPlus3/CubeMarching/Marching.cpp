@@ -2,6 +2,7 @@
 
 #include "FrameTypes.h"
 #include "ProceduralMeshComponent.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Components/InputComponent.h"
 	
 #include "Field/FieldSystemNoiseAlgo.h"
@@ -39,6 +40,7 @@ void AMarching::OnBKeyPressed()
 
 void AMarching::GenerateTerrain()
 {
+	DeleteTerrain();
 	TerrainMap.SetNum((GridSize.X + 1) * (GridSize.Y + 1) * (GridSize.Z + 1));
 	
 	UE_LOG(LogTemp, Warning, TEXT("Create Terrain"));
@@ -49,7 +51,7 @@ void AMarching::GenerateTerrain()
 void AMarching::DeleteTerrain()
 {
 	CleanMeshData();
-
+	
 	if (Mesh)
 	{
 		Mesh->ClearAllMeshSections(); // Esto borra visualmente la malla del viewport
@@ -58,6 +60,26 @@ void AMarching::DeleteTerrain()
 	TerrainMap.Empty();
 	UE_LOG(LogTemp, Warning, TEXT("Terrain deleted"));
 
+}
+
+void AMarching::ConvertToStaticMesh()
+{
+	// if (!Mesh) return;
+	//
+	// FString PackageName = TEXT("/Game/Generated/MarchingStaticMesh_") + FGuid::NewGuid().ToString();
+	// UPackage* Package = CreatePackage(*PackageName);
+	//
+	// // Crea el Static Mesh
+	// UStaticMesh* StaticMesh = NewObject<UStaticMesh>(Package, *FPaths::GetBaseFilename(PackageName), RF_Public | RF_Standalone);
+	// StaticMesh->InitResources();
+	//
+	// UKismetProceduralMeshLibrary::CopyProceduralMeshFromStaticMeshComponent(Mesh, 0, StaticMesh, true);
+	//
+	// // Guarda el asset en disco
+	// FAssetRegistryModule::AssetCreated(StaticMesh);
+	// StaticMesh->MarkPackageDirty();
+	// FString PackageFileName = FPackageName::LongPackageNameToFilename(PackageName, FPackageName::GetAssetPackageExtension());
+	// UPackage::SavePackage(Package, StaticMesh, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *PackageFileName);
 }
 
 void AMarching::Tick(float DeltaTime)
@@ -99,9 +121,11 @@ void AMarching::CreateTerrain()
 		{
 			for (int z=0;z<GridSize.Z+1;z++)
 			{
-
+				//noise -1 1
 				float noise = FMath::PerlinNoise3D(FVector(x/ 16.f * 1.5f + 0.001f,y/ 16.f * 1.5f + 0.001f,z/ 16.f * 1.5f + 0.001f));
+				
   				TerrainMap[getTerrainIndex(x, y, z)] = noise;
+				
 			}
 		}
 	}
@@ -121,7 +145,7 @@ void AMarching::BuildMesh()
 	// Inicializa las normales, UVs y demás arrays
 	//UE_LOG(LogTemp, Warning, TEXT("Initializing mesh data arrays"));
 	//normals.Init(FVector(0, 0, 1), Vertices.Num());
-	normals.SetNum(Vertices.Num());
+	normals.SetNumZeroed(Vertices.Num());
 	for (int i = 0; i < Triangles.Num(); i += 3)
 	{
 		int i0 = Triangles[i];
@@ -231,7 +255,7 @@ const int AMarching::getTerrainIndex( int x, int y, int z)
 
 void AMarching::CubeIteration()
 {
-	CleanMeshData();
+	
 	//iterates for each cube of the grid
 	for (int x=0;x<GridSize.X;x++)
 	{

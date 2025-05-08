@@ -33,6 +33,8 @@ public:
 	void GenerateTerrain();
 	UFUNCTION(CallInEditor, Category = "Marching Cubes")
 	void DeleteTerrain();
+	UFUNCTION(CallInEditor, Category = "Marching Cubes")
+	void ConvertToStaticMesh();
 	virtual void Tick(float DeltaTime) override;
 
 private:
