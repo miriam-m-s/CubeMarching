@@ -182,7 +182,7 @@ void AMarching::BuildMesh()
 
 	// UE_LOG(LogTemp, Warning, TEXT("Calling CreateMeshSection_LinearColor"));
 	// Crea la malla usando los datos
-	Mesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, normals, uvs, vertexColors, tangents, false);
+	Mesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, normals, uvs, vertexColors, tangents, true);
 	// UE_LOG(LogTemp, Warning, TEXT("Mesh section created successfully"));
 }
 
