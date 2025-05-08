@@ -120,18 +120,20 @@ void AMarching::CreateTerrain()
 		
 		for (int y=0;y<GridSize.Y+1;y++)
 		{
-			for (int z=0;z<GridSize.Z+1;z++)
-			{
-				//noise -1 1
-				float noise = FMath::PerlinNoise2D(FVector2D(x/ 16.f * 1.5f + 0.001f,y/ 16.f * 1.5f + 0.001f))*-(GridSize.Z+1);
-				float noiseFinal=0.0f;
-				if (z<=noise-SurfaceLevel)noiseFinal=-1;
-				else if (z>=noise+SurfaceLevel)noiseFinal=1.0f;
-				else if (z>noise)noiseFinal=float(z)-noise;
-				else noiseFinal=noise-float(z);
-  				TerrainMap[getTerrainIndex(x, y, z)] = noiseFinal;
+			
+		
 				
-			}
+				float height = FMath::PerlinNoise2D(FVector2D(x / 16.f * 1.5f + 0.001f, y / 16.f * 1.5f + 0.001f));
+				height = (height + 1.f) * 0.5f; // Remap [-1,1] to [0,1]
+				height *= GridSize.Z; // Escalar a la altura máxima
+
+				for (int z = 0; z < GridSize.Z + 1; z++)
+				{
+					float density = z - height; // Positivo: aire, Negativo: sólido
+					TerrainMap[getTerrainIndex(x, y, z)] = density;
+				}
+
+			
 		}
 	}
 }

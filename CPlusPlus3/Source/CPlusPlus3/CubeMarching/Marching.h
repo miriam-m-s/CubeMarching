@@ -22,7 +22,7 @@ protected:
 public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 MarchingIndex = 1;
+	float MarchingIndex = 1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FIntVector GridSize = FIntVector(30, 30, 30);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
