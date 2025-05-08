@@ -117,14 +117,19 @@ void AMarching::CreateTerrain()
 
 	for (int x=0;x<GridSize.X+1;x++)
 	{
+		
 		for (int y=0;y<GridSize.Y+1;y++)
 		{
 			for (int z=0;z<GridSize.Z+1;z++)
 			{
 				//noise -1 1
-				float noise = FMath::PerlinNoise3D(FVector(x/ 16.f * 1.5f + 0.001f,y/ 16.f * 1.5f + 0.001f,z/ 16.f * 1.5f + 0.001f));
-				
-  				TerrainMap[getTerrainIndex(x, y, z)] = noise;
+				float noise = FMath::PerlinNoise2D(FVector2D(x/ 16.f * 1.5f + 0.001f,y/ 16.f * 1.5f + 0.001f))*-(GridSize.Z+1);
+				float noiseFinal=0.0f;
+				if (z<=noise-SurfaceLevel)noiseFinal=-1;
+				else if (z>=noise+SurfaceLevel)noiseFinal=1.0f;
+				else if (z>noise)noiseFinal=float(z)-noise;
+				else noiseFinal=noise-float(z);
+  				TerrainMap[getTerrainIndex(x, y, z)] = noiseFinal;
 				
 			}
 		}
@@ -158,15 +163,15 @@ void AMarching::BuildMesh()
 	
 		FVector faceNormal = FVector::CrossProduct(v1 - v0, v2 - v0).GetSafeNormal();
 	
-		normals[i0] += faceNormal;
-		normals[i1] += faceNormal;
-		normals[i2] += faceNormal;
+		normals[i0] -= faceNormal;
+		normals[i1] -= faceNormal;
+		normals[i2] -= faceNormal;
 	}
 	
 	// Paso 3: normalizar cada normal de vértice
 	for (int i = 0; i < normals.Num(); ++i)
 	{
-		normals[i]*=-1;
+	
 		normals[i].Normalize();
 	}
 	uvs.Init(FVector2D(0, 0), Vertices.Num());
@@ -205,37 +210,45 @@ void AMarching::MarchCube(FVector pos,float* cube)
 	// maximo numero de trinagulos que puede haber en una intersecion de un cubo con estas 256 posibles combinociones 
 	for (int i = 0; i < 5; i++)
 	{
-		//vertices por triangulo
+		FVector verts[3];
+		int vertIndices[3];
+
+		// Recoge los 3 vértices del triángulo primero
 		for (int j = 0; j < 3; j++)
 		{
 			int indice = TriangleTable[configIndex][edgeIndex];
 			if (indice == -1) return;
 
-			FVector vert1 =pos + EdgeTable[indice][0];
-			FVector vert2 =pos+ EdgeTable[indice][1];
-			//linear interpolation for smooth terrain
-			float noise1=TerrainMap[getTerrainIndex(vert1.X, vert1.Y, vert1.Z)];
-			float noise2=TerrainMap[getTerrainIndex(vert2.X,vert2.Y, vert2.Z)];
+			FVector vert1 = pos + EdgeTable[indice][0];
+			FVector vert2 = pos + EdgeTable[indice][1];
+			float noise1 = TerrainMap[getTerrainIndex(vert1.X, vert1.Y, vert1.Z)];
+			float noise2 = TerrainMap[getTerrainIndex(vert2.X, vert2.Y, vert2.Z)];
 			float t = (SurfaceLevel - noise1) / (noise2 - noise1);
-	
 			FVector vertice = FMath::Lerp(vert1, vert2, t);
 			FVector snapped = vertice.GridSnap(0.01f);
-			int * valor=VertexMap.Find(snapped);
+
+			int* valor = VertexMap.Find(snapped);
 			if (valor)
 			{
-				Triangles.Add(*valor);
+				vertIndices[j] = *valor;
 			}
 			else
 			{
-				Vertices.Add(vertice*100);
-				Triangles.Add(Vertices.Num()-1 );
-				VertexMap.Add(snapped,Vertices.Num()-1);				
+				Vertices.Add(vertice * 100);
+				int newIndex = Vertices.Num() - 1;
+				VertexMap.Add(snapped, newIndex);
+				vertIndices[j] = newIndex;
 			}
+
 			edgeIndex++;
-			
 		}
 
+		
+		Triangles.Add(vertIndices[0]);
+		Triangles.Add(vertIndices[2]);
+		Triangles.Add(vertIndices[1]);
 	}
+
 }
 
 
