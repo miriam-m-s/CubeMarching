@@ -1,5 +1,5 @@
 ﻿#include "Marching.h"
-
+#include"Chunk.h"
 #include "FrameTypes.h"
 #include "ProceduralMeshComponent.h"
 #include "AssetRegistry/AssetRegistryModule.h"
@@ -15,31 +15,33 @@ AMarching::AMarching():MarchingIndex(0)
 	
 
 
-	Mesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("GeneratedMesh"));
-	RootComponent = Mesh;
+	
 }
 
 void AMarching::BeginPlay()
 {
 	Super::BeginPlay();
-	// TerrainMap.SetNum((GridSize.X + 1) * (GridSize.Y + 1) * (GridSize.Z + 1));
-	//
-	// UE_LOG(LogTemp, Warning, TEXT("Create Terrain"));
-	// CreateTerrain();
-	// CubeIteration();
-
-}
-
-
-
-void AMarching::OnBKeyPressed()
-{
-
 	
+
 }
+
+
+
+
 
 void AMarching::GenerateTerrain()
 {
+	
+	
+
+	DeleteTerrain();
+	
+	TerrainMap.SetNum((GridSize.X + 1) * (GridSize.Y + 1) * (GridSize.Z + 1));
+	
+	UE_LOG(LogTemp, Warning, TEXT("Create Terrain"));
+	CreateTerrain();
+
+
 	//si el chunk es mas grande que grid se queda el grid con su tamaño 
 	ChunkSize.X = FMath::Min(GridSize.X, ChunkSize.X);
 	ChunkSize.Y = FMath::Min(GridSize.Y, ChunkSize.Y);
@@ -58,29 +60,73 @@ void AMarching::GenerateTerrain()
 		GridSize.Y % ChunkSize.Y,
 		GridSize.Z % ChunkSize.Z
 	);
+
 	UE_LOG(LogTemp, Warning, TEXT("NumChunks = (%d, %d, %d)"), NumChunks.X, NumChunks.Y, NumChunks.Z);
 	UE_LOG(LogTemp, Warning, TEXT("Remainder = (%d, %d, %d)"), Remainder.X, Remainder.Y, Remainder.Z);
 
-	DeleteTerrain();
 	
-	TerrainMap.SetNum((GridSize.X + 1) * (GridSize.Y + 1) * (GridSize.Z + 1));
-	
-	UE_LOG(LogTemp, Warning, TEXT("Create Terrain"));
-	CreateTerrain();
 	CubeIteration();
+}
+void AMarching::generateChunk(FIntVector chunkCoord,FIntVector LocalChunkSize)
+{
+	UE_LOG(LogTemp, Warning, TEXT("generateChunk%d"),1);
+	if (!Chunks.Contains(chunkCoord))
+	{
+		Chunks.Add(chunkCoord, new Chunk());
+		UE_LOG(LogTemp, Warning, TEXT("Nuevo chunk creado en coordenadas (%d, %d, %d)"), chunkCoord.X, chunkCoord.Y, chunkCoord.Z);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Chunk ya existente en coordenadas (%d, %d, %d), se reutiliza"), chunkCoord.X, chunkCoord.Y, chunkCoord.Z);
+	}
+
+	Chunk* CurrentChunk = Chunks[chunkCoord];
+	UProceduralMeshComponent* NewMesh = NewObject<UProceduralMeshComponent>(this);
+	NewMesh->RegisterComponent();
+	NewMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	CurrentChunk->GetMesh() = NewMesh;
+	// if (!CurrentChunk->GetMesh())
+	// {
+		
+
+	// 	UE_LOG(LogTemp, Warning, TEXT("Nuevo ProceduralMeshComponent creado y adjuntado al chunk (%d, %d, %d)"), chunkCoord.X, chunkCoord.Y, chunkCoord.Z);
+	// }
+	// else
+	// {
+	// 	CurrentChunk->resetMeshData();
+	// 	UE_LOG(LogTemp, Warning, TEXT("Mesh existente reseteada para chunk (%d, %d, %d)"), chunkCoord.X, chunkCoord.Y, chunkCoord.Z);
+	// }
+
+	Chunks[chunkCoord]->GetChunkLocalSize() = LocalChunkSize;
+	UE_LOG(LogTemp, Warning, TEXT("Tamaño local del chunk (%d, %d, %d): (%d, %d, %d)"),
+		chunkCoord.X, chunkCoord.Y, chunkCoord.Z,
+		LocalChunkSize.X, LocalChunkSize.Y, LocalChunkSize.Z);
 }
 
 void AMarching::DeleteTerrain()
 {
-	CleanMeshData();
 	
-	if (Mesh)
+	
+	TerrainMap.Empty();
+
+	// Eliminar y limpiar chunks
+	for (auto& ChunkPair : Chunks)
 	{
-		Mesh->ClearAllMeshSections(); // Esto borra visualmente la malla del viewport
+		if (ChunkPair.Value)
+		{
+			Chunks[ChunkPair.Key]->resetMeshData();
+			if (ChunkPair.Value->GetMesh())
+			{
+				ChunkPair.Value->GetMesh()->DestroyComponent(); // Elimina el componente visual
+			}
+
+			delete ChunkPair.Value;
+			ChunkPair.Value = nullptr;
+		}
 	}
 
-	TerrainMap.Empty();
-	UE_LOG(LogTemp, Warning, TEXT("Terrain deleted"));
+	Chunks.Empty(); // Vaciar el mapa de chunks
+	
 
 }
 
@@ -160,10 +206,12 @@ void AMarching::CreateTerrain()
 	}
 }
 
-void AMarching::BuildMesh()
+void AMarching::BuildMesh(FIntVector chunkCoordinates)
 {
+	Chunk* CurrentChunk = Chunks[chunkCoordinates];
+
 	// UE_LOG(LogTemp, Warning, TEXT("BuildMesh called"));
-	 UE_LOG(LogTemp, Warning, TEXT("Vertices count: %d"), Vertices.Num());
+	 UE_LOG(LogTemp, Warning, TEXT("Vertices count: %d"), CurrentChunk->GetVertices().Num());
 	// UE_LOG(LogTemp, Warning, TEXT("Triangles count: %d"), Triangles.Num());
 
 	TArray<FVector> normals;
@@ -174,16 +222,16 @@ void AMarching::BuildMesh()
 	// Inicializa las normales, UVs y demás arrays
 	//UE_LOG(LogTemp, Warning, TEXT("Initializing mesh data arrays"));
 	//normals.Init(FVector(0, 0, 1), Vertices.Num());
-	normals.SetNumZeroed(Vertices.Num());
-	for (int i = 0; i < Triangles.Num(); i += 3)
+	normals.SetNumZeroed(CurrentChunk->GetVertices().Num());
+	for (int i = 0; i < CurrentChunk->GetTriangles().Num(); i += 3)
 	{
-		int i0 = Triangles[i];
-		int i1 = Triangles[i + 1];
-		int i2 = Triangles[i + 2];
+		int i0 = CurrentChunk->GetTriangles()[i];
+		int i1 = CurrentChunk->GetTriangles()[i + 1];
+		int i2 = CurrentChunk->GetTriangles()[i + 2];
 	
-		const FVector& v0 = Vertices[i0];
-		const FVector& v1 = Vertices[i1];
-		const FVector& v2 = Vertices[i2];
+		const FVector& v0 = CurrentChunk->GetVertices()[i0];
+		const FVector& v1 =CurrentChunk->GetVertices()[i1];
+		const FVector& v2 = CurrentChunk->GetVertices()[i2];
 	
 		FVector faceNormal = FVector::CrossProduct(v1 - v0, v2 - v0).GetSafeNormal();
 	
@@ -198,19 +246,19 @@ void AMarching::BuildMesh()
 	
 		normals[i].Normalize();
 	}
-	uvs.Init(FVector2D(0, 0), Vertices.Num());
-	tangents.Init(FProcMeshTangent(1, 0, 0), Vertices.Num());
-	vertexColors.Init(FLinearColor::Green, Vertices.Num());
+	uvs.Init(FVector2D(0, 0), CurrentChunk->GetVertices().Num());
+	tangents.Init(FProcMeshTangent(1, 0, 0), CurrentChunk->GetVertices().Num());
+	vertexColors.Init(FLinearColor::Green, CurrentChunk->GetVertices().Num());
 
 	// UE_LOG(LogTemp, Warning, TEXT("Calling CreateMeshSection_LinearColor"));
 	// Crea la malla usando los datos
-	Mesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, normals, uvs, vertexColors, tangents, true);
+	CurrentChunk->GetMesh()->CreateMeshSection_LinearColor(0, CurrentChunk->GetVertices(),CurrentChunk->GetTriangles(), normals, uvs, vertexColors, tangents, true);
 	// UE_LOG(LogTemp, Warning, TEXT("Mesh section created successfully"));
 }
 
- int AMarching::GetConfigurationIndex(float* cube)
+ uint8 AMarching::GetConfigurationIndex(float* cube)
 {
-	int configIndex = 0;
+	uint8 configIndex = 0;
 	for (int i = 0; i < 8; ++i)
 	{
 		if ( cube[i] > SurfaceLevel) 
@@ -225,9 +273,9 @@ void AMarching::BuildMesh()
 
 
 }
-void AMarching::MarchCube(FVector pos,float* cube)
+void AMarching::MarchCube(FVector pos,float* cube,FIntVector chunkCoordinates)
 {
-	int configIndex = GetConfigurationIndex(cube);
+	uint8 configIndex = GetConfigurationIndex(cube);
 	if (configIndex == 0 || configIndex == 255) return;
 
 	int edgeIndex = 0;
@@ -251,16 +299,16 @@ void AMarching::MarchCube(FVector pos,float* cube)
 			FVector vertice = FMath::Lerp(vert1, vert2, t);
 			FVector snapped = vertice.GridSnap(0.01f);
 
-			int* valor = VertexMap.Find(snapped);
+			int* valor = Chunks[chunkCoordinates]->GetVertexMap().Find(snapped);
 			if (valor)
 			{
 				vertIndices[j] = *valor;
 			}
 			else
 			{
-				Vertices.Add(vertice * 100);
-				int newIndex = Vertices.Num() - 1;
-				VertexMap.Add(snapped, newIndex);
+				Chunks[chunkCoordinates]->GetVertices().Add(vertice * 100);
+				int newIndex = Chunks[chunkCoordinates]->GetVertices().Num() - 1;
+				 Chunks[chunkCoordinates]->GetVertexMap().Add(snapped, newIndex);
 				vertIndices[j] = newIndex;
 			}
 
@@ -268,21 +316,15 @@ void AMarching::MarchCube(FVector pos,float* cube)
 		}
 
 		
-		Triangles.Add(vertIndices[0]);
-		Triangles.Add(vertIndices[2]);
-		Triangles.Add(vertIndices[1]);
+		 Chunks[chunkCoordinates]->GetTriangles().Add(vertIndices[0]);
+		 Chunks[chunkCoordinates]->GetTriangles().Add(vertIndices[2]);
+		 Chunks[chunkCoordinates]->GetTriangles().Add(vertIndices[1]);
 	}
 
 }
 
 
 
-void AMarching::CleanMeshData()
-{
-	Vertices.Empty();
-	Triangles.Empty();
-	VertexMap.Empty(); 
-}
 
 const int AMarching::getTerrainIndex( int x, int y, int z)
 {
@@ -290,27 +332,79 @@ const int AMarching::getTerrainIndex( int x, int y, int z)
 
 }
 
+
+
 void AMarching::CubeIteration()
 {
-	
-	//iterates for each cube of the grid
-	
-	for (int x=0;x<GridSize.X;x++)
+	for (int i = 0; i < NumChunks.X; i++)
 	{
-		for (int y=0;y<GridSize.Y;y++)
+		for (int j = 0; j < NumChunks.Y; j++)
 		{
-			for (int z=0;z<GridSize.Z;z++)
+			for (int k = 0; k < NumChunks.Z; k++)
 			{
-				float* cube=new float[8];
-				for (int i = 0; i < 8; i++)
-				{
-					FVector corner = FVector(x, y, z)+ CornerTable[i] ;
-					cube[i] = TerrainMap[getTerrainIndex(corner.X, corner.Y, corner.Z)];
-				}
+				// Calcular tamaño real del chunk
+				FIntVector LocalChunkSize = ChunkSize;
+				if (i == NumChunks.X - 1 && Remainder.X > 0) LocalChunkSize.X = Remainder.X;
+				if (j == NumChunks.Y - 1 && Remainder.Y > 0) LocalChunkSize.Y = Remainder.Y;
+				if (k == NumChunks.Z - 1 && Remainder.Z > 0) LocalChunkSize.Z = Remainder.Z;
+
+				generateChunk(FIntVector(i, j, k), LocalChunkSize);
+
 			
-				MarchCube(FVector(x,y,z), cube);
+				int startX = i * ChunkSize.X;
+				int startY = j * ChunkSize.Y;
+				int startZ = k * ChunkSize.Z;
+
+				int endX = startX + LocalChunkSize.X;
+				int endY = startY + LocalChunkSize.Y;
+				int endZ = startZ + LocalChunkSize.Z;
+				UE_LOG(LogTemp, Warning, TEXT("Chunk (%d, %d, %d): Start = (%d, %d, %d), End = (%d, %d, %d)"),
+				i, j, k,
+				startX, startY, startZ,
+				endX, endY, endZ);
+				
+				for (int x = startX; x < endX; x++)
+				{
+					for (int y = startY; y < endY; y++)
+					{
+						for (int z = startZ; z < endZ; z++)
+						{
+							float cube[8];
+
+							for (int cornerIndex = 0; cornerIndex < 8; cornerIndex++)
+							{
+								FVector corner = FVector(x, y, z) + CornerTable[cornerIndex];
+								cube[cornerIndex] = TerrainMap[getTerrainIndex(corner.X, corner.Y, corner.Z)];
+							}
+
+							MarchCube(FVector(x, y, z), cube,FIntVector(i, j, k));
+						}
+					}
+				}
+
+				BuildMesh(FIntVector(i, j, k));
 			}
 		}
 	}
-	BuildMesh();
+
+	//iterates for each cube of the grid
+	
+	// for (int x=0;x<GridSize.X;x++)
+	// {
+	// 	for (int y=0;y<GridSize.Y;y++)
+	// 	{
+	// 		for (int z=0;z<GridSize.Z;z++)
+	// 		{
+	// 			float* cube=new float[8];
+	// 			for (int i = 0; i < 8; i++)
+	// 			{
+	// 				FVector corner = FVector(x, y, z)+ CornerTable[i] ;
+	// 				cube[i] = TerrainMap[getTerrainIndex(corner.X, corner.Y, corner.Z)];
+	// 			}
+	// 		
+	// 			MarchCube(FVector(x,y,z), cube);
+	// 		}
+	// 	}
+	// }
+	// BuildMesh();
 }

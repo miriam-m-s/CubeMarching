@@ -6,8 +6,8 @@
 #include "Marching.generated.h"
 class UProceduralMeshComponent;
 class Chunk;
-UCLASS()
 
+UCLASS()
 class CPLUSPLUS3_API AMarching : public AActor
 {
 	GENERATED_BODY()
@@ -51,7 +51,7 @@ private:
 	 * Builds the final mesh from the computed vertices and triangle indices.
 	 * Should be called after CreateTerrain() and MarchCube() have populated the data.
 	 */
-	void BuildMesh();
+	void BuildMesh(FIntVector chunkCoordinates);
 
 	/**
 	 * Creates the triangles for a single cube in the volume based on the configuration index.
@@ -60,7 +60,7 @@ private:
 	 * @param pos .
 	 * @param cube The configuration index representing the cube's inside/outside state for each corner.
 	 */
-	void MarchCube(FVector pos,float* cube);
+	void MarchCube(FVector pos,float* cube,FIntVector chunkCoordinates);
 
 	/**
 	 * Computes the configuration index for a cube based on its corner scalar values.
@@ -69,20 +69,8 @@ private:
 	 * @param cube Pointer to an array of 8 float values representing the scalar field at the cube's corners.
 	 * @return An integer from 0 to 255 representing the cube configuration.
 	 */
-	 int GetConfigurationIndex(float* cube);
-
-	/**
-	 * Called when the 'B' key is pressed.
-	 * Can be used for triggering terrain generation or mesh updates manually for testing or debugging purposes.
-	 */
-	void OnBKeyPressed();
-
-	/**
-	 * Clears the vectors used to store mesh data (Vertices and Triangles).
-	 * Should be called before generating a new mesh to avoid appending to old data.
-	 */
-	void CleanMeshData();
-
+	 uint8 GetConfigurationIndex(float* cube);
+	
 	/**
 	 * Calculates the  index within the terrain data array given 3D grid coordinates.
 	 *
@@ -92,17 +80,17 @@ private:
 	 * @return The corresponding index for the given (x, y, z) position.
 	 */
 	const int getTerrainIndex( int x, int y, int z);
-
+	void generateChunk(FIntVector chunkCoord,FIntVector LocalChunkSize);
 	void CubeIteration();
 	FIntVector NumChunks;
 	FIntVector Remainder;
-	TMap<FVector, int32> VertexMap;
+	
 	TArray<Chunk*> chunks;
-	UProceduralMeshComponent* Mesh;
+
 	TArray<float> TerrainMap;
-	TArray<FVector> Vertices;
-	TArray<int32> Triangles;
-	bool bKeyPressed = false;
+
+
+	TMap<FIntVector, Chunk*> Chunks;
 	
 	const FVector CornerTable[8]= {
 		FVector(0, 0, 0),
