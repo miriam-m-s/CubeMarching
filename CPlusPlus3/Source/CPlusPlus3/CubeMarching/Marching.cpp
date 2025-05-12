@@ -40,7 +40,29 @@ void AMarching::OnBKeyPressed()
 
 void AMarching::GenerateTerrain()
 {
+	//si el chunk es mas grande que grid se queda el grid con su tamaño 
+	ChunkSize.X = FMath::Min(GridSize.X, ChunkSize.X);
+	ChunkSize.Y = FMath::Min(GridSize.Y, ChunkSize.Y);
+	ChunkSize.Z = FMath::Min(GridSize.Z, ChunkSize.Z);
+	//chunks enteros que hay en el terreno
+	
+	NumChunks = FIntVector(
+		(GridSize.X + ChunkSize.X - 1) / ChunkSize.X,
+		(GridSize.Y + ChunkSize.Y - 1) / ChunkSize.Y,
+		(GridSize.Z + ChunkSize.Z - 1) / ChunkSize.Z
+	);
+
+	// Calcular el tamaño de grid sobrante que no llena un chunk completo (por si lo necesitas)
+	Remainder = FIntVector(
+		GridSize.X % ChunkSize.X,
+		GridSize.Y % ChunkSize.Y,
+		GridSize.Z % ChunkSize.Z
+	);
+	UE_LOG(LogTemp, Warning, TEXT("NumChunks = (%d, %d, %d)"), NumChunks.X, NumChunks.Y, NumChunks.Z);
+	UE_LOG(LogTemp, Warning, TEXT("Remainder = (%d, %d, %d)"), Remainder.X, Remainder.Y, Remainder.Z);
+
 	DeleteTerrain();
+	
 	TerrainMap.SetNum((GridSize.X + 1) * (GridSize.Y + 1) * (GridSize.Z + 1));
 	
 	UE_LOG(LogTemp, Warning, TEXT("Create Terrain"));
@@ -178,7 +200,7 @@ void AMarching::BuildMesh()
 	}
 	uvs.Init(FVector2D(0, 0), Vertices.Num());
 	tangents.Init(FProcMeshTangent(1, 0, 0), Vertices.Num());
-	vertexColors.Init(FLinearColor::White, Vertices.Num());
+	vertexColors.Init(FLinearColor::Green, Vertices.Num());
 
 	// UE_LOG(LogTemp, Warning, TEXT("Calling CreateMeshSection_LinearColor"));
 	// Crea la malla usando los datos
@@ -272,6 +294,7 @@ void AMarching::CubeIteration()
 {
 	
 	//iterates for each cube of the grid
+	
 	for (int x=0;x<GridSize.X;x++)
 	{
 		for (int y=0;y<GridSize.Y;y++)

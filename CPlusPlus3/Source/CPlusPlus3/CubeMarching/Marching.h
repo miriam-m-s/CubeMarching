@@ -36,6 +36,7 @@ public:
 	UFUNCTION(CallInEditor, Category = "Marching Cubes")
 	void ConvertToStaticMesh();
 	virtual void Tick(float DeltaTime) override;
+	
 
 private:
 
@@ -56,7 +57,7 @@ private:
 	 * Creates the triangles for a single cube in the volume based on the configuration index.
 	 * Looks up the triangulation table to determine which vertices to connect.
 	 *
-	 * @param pos The configuration index representing the cube's inside/outside state for each corner.
+	 * @param pos .
 	 * @param cube The configuration index representing the cube's inside/outside state for each corner.
 	 */
 	void MarchCube(FVector pos,float* cube);
@@ -93,7 +94,8 @@ private:
 	const int getTerrainIndex( int x, int y, int z);
 
 	void CubeIteration();
-
+	FIntVector NumChunks;
+	FIntVector Remainder;
 	TMap<FVector, int32> VertexMap;
 	TArray<Chunk*> chunks;
 	UProceduralMeshComponent* Mesh;
