@@ -121,25 +121,25 @@ void AMarching::DeleteTerrain()
 
 }
 
-void AMarching::ConvertToStaticMesh()
-{
-	// if (!Mesh) return;
-	//
-	// FString PackageName = TEXT("/Game/Generated/MarchingStaticMesh_") + FGuid::NewGuid().ToString();
-	// UPackage* Package = CreatePackage(*PackageName);
-	//
-	// // Crea el Static Mesh
-	// UStaticMesh* StaticMesh = NewObject<UStaticMesh>(Package, *FPaths::GetBaseFilename(PackageName), RF_Public | RF_Standalone);
-	// StaticMesh->InitResources();
-	//
-	// UKismetProceduralMeshLibrary::CopyProceduralMeshFromStaticMeshComponent(Mesh, 0, StaticMesh, true);
-	//
-	// // Guarda el asset en disco
-	// FAssetRegistryModule::AssetCreated(StaticMesh);
-	// StaticMesh->MarkPackageDirty();
-	// FString PackageFileName = FPackageName::LongPackageNameToFilename(PackageName, FPackageName::GetAssetPackageExtension());
-	// UPackage::SavePackage(Package, StaticMesh, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *PackageFileName);
-}
+// void AMarching::ConvertToStaticMesh()
+// {
+// 	// if (!Mesh) return;
+// 	//
+// 	// FString PackageName = TEXT("/Game/Generated/MarchingStaticMesh_") + FGuid::NewGuid().ToString();
+// 	// UPackage* Package = CreatePackage(*PackageName);
+// 	//
+// 	// // Crea el Static Mesh
+// 	// UStaticMesh* StaticMesh = NewObject<UStaticMesh>(Package, *FPaths::GetBaseFilename(PackageName), RF_Public | RF_Standalone);
+// 	// StaticMesh->InitResources();
+// 	//
+// 	// UKismetProceduralMeshLibrary::CopyProceduralMeshFromStaticMeshComponent(Mesh, 0, StaticMesh, true);
+// 	//
+// 	// // Guarda el asset en disco
+// 	// FAssetRegistryModule::AssetCreated(StaticMesh);
+// 	// StaticMesh->MarkPackageDirty();
+// 	// FString PackageFileName = FPackageName::LongPackageNameToFilename(PackageName, FPackageName::GetAssetPackageExtension());
+// 	// UPackage::SavePackage(Package, StaticMesh, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *PackageFileName);
+// }
 
 void AMarching::Tick(float DeltaTime)
 {
@@ -239,12 +239,21 @@ void AMarching::BuildMesh(FIntVector chunkCoordinates)
 	}
 	uvs.Init(FVector2D(0, 0), CurrentChunk->GetVertices().Num());
 	tangents.Init(FProcMeshTangent(1, 0, 0), CurrentChunk->GetVertices().Num());
-	vertexColors.Init(FLinearColor::Green, CurrentChunk->GetVertices().Num());
+	float R = FMath::FRand(); // Valor entre 0.0 y 1.0
+	float G = FMath::FRand();
+	float B = FMath::FRand();
+
+	vertexColors.Init(FLinearColor(R, G, B, 1.0f), CurrentChunk->GetVertices().Num());
 
 	// UE_LOG(LogTemp, Warning, TEXT("Calling CreateMeshSection_LinearColor"));
 	// Crea la malla usando los datos
 	CurrentChunk->GetMesh()->CreateMeshSection_LinearColor(0, CurrentChunk->GetVertices(),CurrentChunk->GetTriangles(), normals, uvs, vertexColors, tangents, true);
+	if (Material)
+	{
+		CurrentChunk->GetMesh()->SetMaterial(0,Material);
+	}
 	// UE_LOG(LogTemp, Warning, TEXT("Mesh section created successfully"));
+	//CurrentChunk->GetMesh()->SetMaterial()
 }
 
  uint8 AMarching::GetConfigurationIndex(float* cube)

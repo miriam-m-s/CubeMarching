@@ -6,6 +6,7 @@
 #include "Marching.generated.h"
 class UProceduralMeshComponent;
 class Chunk;
+class UMaterialInterface;
 
 UCLASS()
 class CPLUSPLUS3_API AMarching : public AActor
@@ -31,12 +32,14 @@ public:
 	float SurfaceLevel=0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float noiseScale=1.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UMaterialInterface* Material;
 	UFUNCTION(CallInEditor, Category = "Marching Cubes")
 	void GenerateTerrain();
 	UFUNCTION(CallInEditor, Category = "Marching Cubes")
 	void DeleteTerrain();
-	UFUNCTION(CallInEditor, Category = "Marching Cubes")
-	void ConvertToStaticMesh();
+	// UFUNCTION(CallInEditor, Category = "Marching Cubes")
+	// void ConvertToStaticMesh();
 	virtual void Tick(float DeltaTime) override;
 	
 
