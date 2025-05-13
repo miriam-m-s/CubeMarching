@@ -29,6 +29,8 @@ public:
 	FIntVector ChunkSize = FIntVector(20, 10, 10);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float SurfaceLevel=0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float noiseScale=1.0f;
 	UFUNCTION(CallInEditor, Category = "Marching Cubes")
 	void GenerateTerrain();
 	UFUNCTION(CallInEditor, Category = "Marching Cubes")

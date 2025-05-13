@@ -182,7 +182,7 @@ void AMarching::CreateTerrain()
 			
 		
 				
-				float height = FMath::PerlinNoise2D(FVector2D(x / 16.f * 1.5f + 0.001f, y / 16.f * 1.5f + 0.001f));
+				float height = FMath::PerlinNoise2D(FVector2D((x / 16.f * 1.5f + 0.001f)*noiseScale, (y / 16.f * 1.5f + 0.001f))*noiseScale);
 				height = (height + 1.f) * 0.5f; // Remap [-1,1] to [0,1]
 				height *= GridSize.Z; // Escalar a la altura máxima
 
