@@ -235,13 +235,18 @@ void AMarching::BuildMesh(FIntVector chunkCoordinates)
 	}
 	uvs.SetNum(CurrentChunk->GetVertices().Num());
 
+	
+
+	FVector ChunkOrigin = FVector(chunkCoordinates.X * ChunkSize.X,
+								  chunkCoordinates.Y * ChunkSize.Y,
+								  chunkCoordinates.Z * ChunkSize.Z) * 100.f; // Asumes que cada unidad es 100?
+
 	for (int32 i = 0; i < CurrentChunk->GetVertices().Num(); ++i)
 	{
-		FVector vertex = CurrentChunk->GetVertices()[i];
+		FVector LocalVertex = CurrentChunk->GetVertices()[i] - ChunkOrigin;
 
-		//normalizamos para tener uvs
-		float U = vertex.X / (GridSize.X * 100.0f);
-		float V = vertex.Y / (GridSize.Y * 100.0f);
+		float U = LocalVertex.X / (ChunkSize.X * 100.0f);
+		float V = LocalVertex.Y / (ChunkSize.Y * 100.0f);
 
 		uvs[i] = FVector2D(U, V);
 	}
