@@ -239,12 +239,13 @@ void AMarching::BuildMesh(FIntVector chunkCoordinates)
 
 	FVector ChunkOrigin = FVector(chunkCoordinates.X * ChunkSize.X,
 								  chunkCoordinates.Y * ChunkSize.Y,
-								  chunkCoordinates.Z * ChunkSize.Z) * 100.f; // Asumes que cada unidad es 100?
+								  chunkCoordinates.Z * ChunkSize.Z) * 100.f; 
 
 	for (int32 i = 0; i < CurrentChunk->GetVertices().Num(); ++i)
 	{
+		//lo desplazamos como si su sistema de coordenadas fuera los chunks
 		FVector LocalVertex = CurrentChunk->GetVertices()[i] - ChunkOrigin;
-
+		//Normalizamos para sacar sus uvs
 		float U = LocalVertex.X / (ChunkSize.X * 100.0f);
 		float V = LocalVertex.Y / (ChunkSize.Y * 100.0f);
 
