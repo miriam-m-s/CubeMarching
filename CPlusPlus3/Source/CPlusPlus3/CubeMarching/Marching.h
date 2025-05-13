@@ -41,7 +41,7 @@ public:
 	// UFUNCTION(CallInEditor, Category = "Marching Cubes")
 	// void ConvertToStaticMesh();
 	virtual void Tick(float DeltaTime) override;
-	
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 private:
 

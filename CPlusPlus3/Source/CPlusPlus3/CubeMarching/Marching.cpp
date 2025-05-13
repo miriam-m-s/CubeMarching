@@ -121,31 +121,27 @@ void AMarching::DeleteTerrain()
 
 }
 
-// void AMarching::ConvertToStaticMesh()
-// {
-// 	// if (!Mesh) return;
-// 	//
-// 	// FString PackageName = TEXT("/Game/Generated/MarchingStaticMesh_") + FGuid::NewGuid().ToString();
-// 	// UPackage* Package = CreatePackage(*PackageName);
-// 	//
-// 	// // Crea el Static Mesh
-// 	// UStaticMesh* StaticMesh = NewObject<UStaticMesh>(Package, *FPaths::GetBaseFilename(PackageName), RF_Public | RF_Standalone);
-// 	// StaticMesh->InitResources();
-// 	//
-// 	// UKismetProceduralMeshLibrary::CopyProceduralMeshFromStaticMeshComponent(Mesh, 0, StaticMesh, true);
-// 	//
-// 	// // Guarda el asset en disco
-// 	// FAssetRegistryModule::AssetCreated(StaticMesh);
-// 	// StaticMesh->MarkPackageDirty();
-// 	// FString PackageFileName = FPackageName::LongPackageNameToFilename(PackageName, FPackageName::GetAssetPackageExtension());
-// 	// UPackage::SavePackage(Package, StaticMesh, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *PackageFileName);
-// }
 
 void AMarching::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
+void AMarching::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+	if (Material)
+		for (auto& ChunkPair : Chunks)
+		{
+			if (ChunkPair.Value)
+				if (ChunkPair.Value->GetMesh())
+				
+					ChunkPair.Value->GetMesh()->SetMaterial(0,Material);
+		}
+			
+		
+	
+}
 
 
 void AMarching::CreateTerrain()
@@ -398,24 +394,5 @@ void AMarching::CubeIteration()
 		}
 	}
 
-	//iterates for each cube of the grid
-	
-	// for (int x=0;x<GridSize.X;x++)
-	// {
-	// 	for (int y=0;y<GridSize.Y;y++)
-	// 	{
-	// 		for (int z=0;z<GridSize.Z;z++)
-	// 		{
-	// 			float* cube=new float[8];
-	// 			for (int i = 0; i < 8; i++)
-	// 			{
-	// 				FVector corner = FVector(x, y, z)+ CornerTable[i] ;
-	// 				cube[i] = TerrainMap[getTerrainIndex(corner.X, corner.Y, corner.Z)];
-	// 			}
-	// 		
-	// 			MarchCube(FVector(x,y,z), cube);
-	// 		}
-	// 	}
-	// }
-	// BuildMesh();
+
 }
