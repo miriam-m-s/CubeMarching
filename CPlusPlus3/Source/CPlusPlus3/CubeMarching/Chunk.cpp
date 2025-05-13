@@ -2,26 +2,19 @@
 
 #include "ProceduralMeshComponent.h"
 
-Chunk::Chunk()
+Chunk::Chunk():Mesh(nullptr)
 {
 }
 
-Chunk::~Chunk()
-{
-	if (Mesh)
-	{
-		delete Mesh;
-		Mesh=nullptr;
-		
-	}
-}
+
+
 
 void Chunk::resetMeshData()
 {
 	Vertices.Empty();
 	Triangles.Empty();
 	VertexMap.Empty();
-	if (Mesh)Mesh->ClearAllMeshSections();
+
 	
 }
 

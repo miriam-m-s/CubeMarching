@@ -70,33 +70,21 @@ void AMarching::GenerateTerrain()
 void AMarching::generateChunk(FIntVector chunkCoord,FIntVector LocalChunkSize)
 {
 	UE_LOG(LogTemp, Warning, TEXT("generateChunk%d"),1);
-	if (!Chunks.Contains(chunkCoord))
-	{
-		Chunks.Add(chunkCoord, new Chunk());
-		UE_LOG(LogTemp, Warning, TEXT("Nuevo chunk creado en coordenadas (%d, %d, %d)"), chunkCoord.X, chunkCoord.Y, chunkCoord.Z);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Chunk ya existente en coordenadas (%d, %d, %d), se reutiliza"), chunkCoord.X, chunkCoord.Y, chunkCoord.Z);
-	}
+
+
+	Chunks.Add(chunkCoord, new Chunk());
+	
 
 	Chunk* CurrentChunk = Chunks[chunkCoord];
+
+	
+	
 	UProceduralMeshComponent* NewMesh = NewObject<UProceduralMeshComponent>(this);
 	NewMesh->RegisterComponent();
 	NewMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 	CurrentChunk->GetMesh() = NewMesh;
-	// if (!CurrentChunk->GetMesh())
-	// {
-		
 
-	// 	UE_LOG(LogTemp, Warning, TEXT("Nuevo ProceduralMeshComponent creado y adjuntado al chunk (%d, %d, %d)"), chunkCoord.X, chunkCoord.Y, chunkCoord.Z);
-	// }
-	// else
-	// {
-	// 	CurrentChunk->resetMeshData();
-	// 	UE_LOG(LogTemp, Warning, TEXT("Mesh existente reseteada para chunk (%d, %d, %d)"), chunkCoord.X, chunkCoord.Y, chunkCoord.Z);
-	// }
-
+	
 	Chunks[chunkCoord]->GetChunkLocalSize() = LocalChunkSize;
 	UE_LOG(LogTemp, Warning, TEXT("Tamaño local del chunk (%d, %d, %d): (%d, %d, %d)"),
 		chunkCoord.X, chunkCoord.Y, chunkCoord.Z,
@@ -109,23 +97,26 @@ void AMarching::DeleteTerrain()
 	
 	TerrainMap.Empty();
 
-	// Eliminar y limpiar chunks
+
 	for (auto& ChunkPair : Chunks)
 	{
 		if (ChunkPair.Value)
 		{
-			Chunks[ChunkPair.Key]->resetMeshData();
 			if (ChunkPair.Value->GetMesh())
 			{
 				ChunkPair.Value->GetMesh()->DestroyComponent(); // Elimina el componente visual
 			}
-
 			delete ChunkPair.Value;
 			ChunkPair.Value = nullptr;
 		}
 	}
+	
 
-	Chunks.Empty(); // Vaciar el mapa de chunks
+
+	Chunks.Empty();
+
+	
+
 	
 
 }

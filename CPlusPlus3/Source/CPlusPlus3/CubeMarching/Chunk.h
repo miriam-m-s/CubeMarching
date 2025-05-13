@@ -11,7 +11,7 @@ class Chunk
 
 public:
 	Chunk();
-	~Chunk();
+
 	void resetMeshData();
 	// Métodos para acceder por referencia
 	UProceduralMeshComponent*& GetMesh();              // puntero por referencia
