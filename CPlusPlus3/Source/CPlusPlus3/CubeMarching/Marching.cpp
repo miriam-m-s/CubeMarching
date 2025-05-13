@@ -237,7 +237,18 @@ void AMarching::BuildMesh(FIntVector chunkCoordinates)
 	
 		normals[i].Normalize();
 	}
-	uvs.Init(FVector2D(0, 0), CurrentChunk->GetVertices().Num());
+	uvs.SetNum(CurrentChunk->GetVertices().Num());
+
+	for (int32 i = 0; i < CurrentChunk->GetVertices().Num(); ++i)
+	{
+		FVector vertex = CurrentChunk->GetVertices()[i];
+
+		//normalizamos para tener uvs
+		float U = vertex.X / (GridSize.X * 100.0f);
+		float V = vertex.Y / (GridSize.Y * 100.0f);
+
+		uvs[i] = FVector2D(U, V);
+	}
 	tangents.Init(FProcMeshTangent(1, 0, 0), CurrentChunk->GetVertices().Num());
 	float R = FMath::FRand(); // Valor entre 0.0 y 1.0
 	float G = FMath::FRand();
