@@ -11,7 +11,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Operations/EmbedSurfacePath.h"
 
-AMarching::AMarching():MarchingIndex(0),RuntimeVolume(nullptr)
+AMarching::AMarching():RuntimeVolume(nullptr)
 {
 	
 
@@ -283,7 +283,7 @@ void AMarching::BuildMesh(FIntPoint   chunkCoordinates)
 		CurrentChunk->GetMesh()->SetMaterial(0,Material);
 	}
 	// UE_LOG(LogTemp, Warning, TEXT("Mesh section created successfully"));
-	//CurrentChunk->GetMesh()->SetMaterial()
+	CurrentChunk->GetMesh()->GetRuntimeVirtualTextures();
 }
 
  uint8 AMarching::GetConfigurationIndex(float* cube)

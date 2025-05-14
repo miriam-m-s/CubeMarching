@@ -24,9 +24,7 @@ protected:
 	
 	
 public:
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float MarchingIndex = 1;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FIntVector GridSize = FIntVector(30, 30, 30);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
