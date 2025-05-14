@@ -7,7 +7,7 @@ class Chunk
 	TArray<FVector> Vertices;
 	TArray<int32> Triangles;
 	TMap<FVector, int32> VertexMap;
-	FIntVector chunkLocalSize;
+	FIntPoint chunkLocalSize;
 
 public:
 	Chunk();
@@ -17,7 +17,7 @@ public:
 	UProceduralMeshComponent*& GetMesh();              // puntero por referencia
 	TArray<float>& GetTerrainMap();
 	TArray<FVector>& GetVertices();
-	FIntVector& GetChunkLocalSize();
+	FIntPoint& GetChunkLocalSize();
 	TArray<int32>& GetTriangles();
 	TMap<FVector, int32>& GetVertexMap();
 

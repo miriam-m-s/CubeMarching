@@ -3,10 +3,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
 #include "Marching.generated.h"
+
 class UProceduralMeshComponent;
 class Chunk;
 class UMaterialInterface;
+class ARuntimeVirtualTextureVolume;
 
 UCLASS()
 class CPLUSPLUS3_API AMarching : public AActor
@@ -27,7 +30,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FIntVector GridSize = FIntVector(30, 30, 30);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FIntVector ChunkSize = FIntVector(20, 10, 10);
+	FIntPoint  ChunkSize = FIntPoint (20, 10);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float SurfaceLevel=0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -56,7 +59,7 @@ private:
 	 * Builds the final mesh from the computed vertices and triangle indices.
 	 * Should be called after CreateTerrain() and MarchCube() have populated the data.
 	 */
-	void BuildMesh(FIntVector chunkCoordinates);
+	void BuildMesh(FIntPoint chunkCoordinates);
 
 	/**
 	 * Creates the triangles for a single cube in the volume based on the configuration index.
@@ -65,7 +68,7 @@ private:
 	 * @param pos .
 	 * @param cube The configuration index representing the cube's inside/outside state for each corner.
 	 */
-	void MarchCube(FVector pos,float* cube,FIntVector chunkCoordinates);
+	void MarchCube(FVector pos,float* cube,FIntPoint chunkCoordinates);
 
 	/**
 	 * Computes the configuration index for a cube based on its corner scalar values.
@@ -85,17 +88,17 @@ private:
 	 * @return The corresponding index for the given (x, y, z) position.
 	 */
 	const int getTerrainIndex( int x, int y, int z);
-	void generateChunk(FIntVector chunkCoord,FIntVector LocalChunkSize);
+	void generateChunk(FIntPoint  chunkCoord,FIntPoint LocalChunkSize);
 	void CubeIteration();
-	FIntVector NumChunks;
-	FIntVector Remainder;
+	FIntPoint  NumChunks;
+	FIntPoint  Remainder;
 	
 	TArray<Chunk*> chunks;
 
 	TArray<float> TerrainMap;
+	ARuntimeVirtualTextureVolume* RuntimeVolume;
 
-
-	TMap<FIntVector, Chunk*> Chunks;
+	TMap<FIntPoint , Chunk*> Chunks;
 	
 	const FVector CornerTable[8]= {
 		FVector(0, 0, 0),

@@ -4,13 +4,14 @@
 #include "ProceduralMeshComponent.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Components/InputComponent.h"
+#include "VT/RuntimeVirtualTextureVolume.h"
 	
 #include "Field/FieldSystemNoiseAlgo.h"
 
 #include "GameFramework/PlayerController.h"
 #include "Operations/EmbedSurfacePath.h"
 
-AMarching::AMarching():MarchingIndex(0)
+AMarching::AMarching():MarchingIndex(0),RuntimeVolume(nullptr)
 {
 	
 
@@ -31,7 +32,7 @@ void AMarching::BeginPlay()
 
 void AMarching::GenerateTerrain()
 {
-	
+	//RuntimeVolume
 	
 
 	DeleteTerrain();
@@ -45,29 +46,29 @@ void AMarching::GenerateTerrain()
 	//si el chunk es mas grande que grid se queda el grid con su tamaño 
 	ChunkSize.X = FMath::Min(GridSize.X, ChunkSize.X);
 	ChunkSize.Y = FMath::Min(GridSize.Y, ChunkSize.Y);
-	ChunkSize.Z = FMath::Min(GridSize.Z, ChunkSize.Z);
+
 	//chunks enteros que hay en el terreno
 	
-	NumChunks = FIntVector(
+	NumChunks = FIntPoint (
 		(GridSize.X + ChunkSize.X - 1) / ChunkSize.X,
-		(GridSize.Y + ChunkSize.Y - 1) / ChunkSize.Y,
-		(GridSize.Z + ChunkSize.Z - 1) / ChunkSize.Z
+		(GridSize.Y + ChunkSize.Y - 1) / ChunkSize.Y
+	
 	);
 
 	// Calcular el tamaño de grid sobrante que no llena un chunk completo (por si lo necesitas)
-	Remainder = FIntVector(
+	Remainder = FIntPoint(
 		GridSize.X % ChunkSize.X,
-		GridSize.Y % ChunkSize.Y,
-		GridSize.Z % ChunkSize.Z
+		GridSize.Y % ChunkSize.Y
+		
 	);
 
-	UE_LOG(LogTemp, Warning, TEXT("NumChunks = (%d, %d, %d)"), NumChunks.X, NumChunks.Y, NumChunks.Z);
-	UE_LOG(LogTemp, Warning, TEXT("Remainder = (%d, %d, %d)"), Remainder.X, Remainder.Y, Remainder.Z);
+	UE_LOG(LogTemp, Warning, TEXT("NumChunks = (%d, %d, %d)"), NumChunks.X, NumChunks.Y);
+	UE_LOG(LogTemp, Warning, TEXT("Remainder = (%d, %d, %d)"), Remainder.X, Remainder.Y);
 
 	
 	CubeIteration();
 }
-void AMarching::generateChunk(FIntVector chunkCoord,FIntVector LocalChunkSize)
+void AMarching::generateChunk(FIntPoint  chunkCoord,FIntPoint LocalChunkSize)
 {
 	UE_LOG(LogTemp, Warning, TEXT("generateChunk%d"),1);
 
@@ -86,9 +87,7 @@ void AMarching::generateChunk(FIntVector chunkCoord,FIntVector LocalChunkSize)
 
 	
 	Chunks[chunkCoord]->GetChunkLocalSize() = LocalChunkSize;
-	UE_LOG(LogTemp, Warning, TEXT("Tamaño local del chunk (%d, %d, %d): (%d, %d, %d)"),
-		chunkCoord.X, chunkCoord.Y, chunkCoord.Z,
-		LocalChunkSize.X, LocalChunkSize.Y, LocalChunkSize.Z);
+	
 }
 
 void AMarching::DeleteTerrain()
@@ -181,9 +180,10 @@ void AMarching::CreateTerrain()
 				float height = FMath::PerlinNoise2D(FVector2D((x / 16.f * 1.5f + 0.001f)*noiseScale, (y / 16.f * 1.5f + 0.001f))*noiseScale);
 				height = (height + 1.f) * 0.5f; // Remap [-1,1] to [0,1]
 				height *= GridSize.Z; // Escalar a la altura máxima
-
+				if (x==5 && y==5)height=0;
 				for (int z = 0; z < GridSize.Z + 1; z++)
 				{
+				
 					float density = z - height; // Positivo: aire, Negativo: sólido
 					TerrainMap[getTerrainIndex(x, y, z)] = density;
 				}
@@ -191,9 +191,26 @@ void AMarching::CreateTerrain()
 			
 		}
 	}
+	// for (int x = 0; x <= GridSize.X; x++)
+	// {
+	// 	for (int y = 0; y <= GridSize.Y; y++)
+	// 	{
+	// 		for (int z = 0; z <= GridSize.Z; z++)
+	// 		{
+	// 			FVector Position(x, y, z);
+	// 			FVector WorldPos = Position * 100.0f;
+	//
+	// 			if (FVector::Dist(WorldPos, FVector(15,15,3)) <= 10)
+	// 			{
+	// 				int index = getTerrainIndex(x, y, z);
+	// 				TerrainMap[index] = 10.0f; // Un valor claramente mayor que SurfaceLevel para forzar "aire"
+	// 			}
+	// 		}
+	// 	}
+	// }
 }
 
-void AMarching::BuildMesh(FIntVector chunkCoordinates)
+void AMarching::BuildMesh(FIntPoint   chunkCoordinates)
 {
 	Chunk* CurrentChunk = Chunks[chunkCoordinates];
 
@@ -239,7 +256,7 @@ void AMarching::BuildMesh(FIntVector chunkCoordinates)
 
 	FVector ChunkOrigin = FVector(chunkCoordinates.X * ChunkSize.X,
 								  chunkCoordinates.Y * ChunkSize.Y,
-								  chunkCoordinates.Z * ChunkSize.Z) * 100.f; 
+								    0) * 100.f; 
 
 	for (int32 i = 0; i < CurrentChunk->GetVertices().Num(); ++i)
 	{
@@ -286,7 +303,7 @@ void AMarching::BuildMesh(FIntVector chunkCoordinates)
 
 
 }
-void AMarching::MarchCube(FVector pos,float* cube,FIntVector chunkCoordinates)
+void AMarching::MarchCube(FVector pos,float* cube,FIntPoint chunkCoordinates)
 {
 	uint8 configIndex = GetConfigurationIndex(cube);
 	if (configIndex == 0 || configIndex == 255) return;
@@ -353,34 +370,31 @@ void AMarching::CubeIteration()
 	{
 		for (int j = 0; j < NumChunks.Y; j++)
 		{
-			for (int k = 0; k < NumChunks.Z; k++)
-			{
+			
 				// Calcular tamaño real del chunk
-				FIntVector LocalChunkSize = ChunkSize;
+				FIntPoint LocalChunkSize = ChunkSize;
 				if (i == NumChunks.X - 1 && Remainder.X > 0) LocalChunkSize.X = Remainder.X;
 				if (j == NumChunks.Y - 1 && Remainder.Y > 0) LocalChunkSize.Y = Remainder.Y;
-				if (k == NumChunks.Z - 1 && Remainder.Z > 0) LocalChunkSize.Z = Remainder.Z;
+				
 
-				generateChunk(FIntVector(i, j, k), LocalChunkSize);
+				generateChunk(FIntPoint(i, j), LocalChunkSize);
 
 			
 				int startX = i * ChunkSize.X;
 				int startY = j * ChunkSize.Y;
-				int startZ = k * ChunkSize.Z;
+			
 
 				int endX = startX + LocalChunkSize.X;
 				int endY = startY + LocalChunkSize.Y;
-				int endZ = startZ + LocalChunkSize.Z;
-				UE_LOG(LogTemp, Warning, TEXT("Chunk (%d, %d, %d): Start = (%d, %d, %d), End = (%d, %d, %d)"),
-				i, j, k,
-				startX, startY, startZ,
-				endX, endY, endZ);
+				
+				
+				
 				
 				for (int x = startX; x < endX; x++)
 				{
 					for (int y = startY; y < endY; y++)
 					{
-						for (int z = startZ; z < endZ; z++)
+						for (int z = 0; z < GridSize.Z; z++)
 						{
 							float cube[8];
 
@@ -390,15 +404,15 @@ void AMarching::CubeIteration()
 								cube[cornerIndex] = TerrainMap[getTerrainIndex(corner.X, corner.Y, corner.Z)];
 							}
 
-							MarchCube(FVector(x, y, z), cube,FIntVector(i, j, k));
+							MarchCube(FVector(x, y, z), cube,FIntPoint(i, j));
 						}
 					}
 				}
 
-				BuildMesh(FIntVector(i, j, k));
+				BuildMesh(FIntPoint(i, j));
 			}
 		}
 	}
 
 
-}
+

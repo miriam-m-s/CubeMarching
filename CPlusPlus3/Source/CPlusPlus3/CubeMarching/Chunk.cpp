@@ -33,7 +33,7 @@ TArray<FVector>& Chunk::GetVertices()
 	return Vertices;
 }
 
-FIntVector& Chunk::GetChunkLocalSize()
+FIntPoint& Chunk::GetChunkLocalSize()
 {
 	return chunkLocalSize;
 }
