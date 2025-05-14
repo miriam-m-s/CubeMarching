@@ -11,17 +11,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="87a2a001-1d87-4e86-b1d3-c109f3d22d15" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/myProceduralMesh.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/myProceduralMesh.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.CPlusPlus3/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CPlusPlus3/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/M_terrain.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/NewRuntimeVirtualTexture.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/0/V9/8LZ2470QPXSP6BY49JMNUR.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/1/AZ/A7GPT109Y6ZTTJD4A7TXER.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/1/AZ/A7GPT109Y6ZTTJD4A7TXER.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.h" afterDir="false" />
-    </list>
+    <list default="true" id="87a2a001-1d87-4e86-b1d3-c109f3d22d15" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -164,7 +154,7 @@
       <workItem from="1746714363276" duration="10731000" />
       <workItem from="1747059158059" duration="17310000" />
       <workItem from="1747144792601" duration="14238000" />
-      <workItem from="1747232079651" duration="7120000" />
+      <workItem from="1747232079651" duration="7463000" />
     </task>
     <servers />
   </component>
