@@ -13,10 +13,14 @@
   <component name="ChangeListManager">
     <list default="true" id="87a2a001-1d87-4e86-b1d3-c109f3d22d15" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.CPlusPlus3/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CPlusPlus3/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Config/DefaultInput.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultInput.ini" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/CubeMarching/M_terrain.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/CubeMarching/M_terrain.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/CubeMarching.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/CubeMarching.h" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/RayCastClicker.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/RayCastClicker.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/myProceduralMesh.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/myProceduralMesh.h" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -164,7 +168,7 @@
       <workItem from="1747232079651" duration="7463000" />
       <workItem from="1747419098743" duration="2027000" />
       <workItem from="1747432058787" duration="1156000" />
-      <workItem from="1747602287600" duration="2393000" />
+      <workItem from="1747602287600" duration="7307000" />
     </task>
     <servers />
   </component>

@@ -3,6 +3,8 @@
 
 #include "RayCastClicker.h"
 
+#include "Marching.h"
+
 // Sets default values
 ARayCastClicker::ARayCastClicker()
 {
@@ -16,7 +18,13 @@ void ARayCastClicker::BeginPlay()
 {
 	Super::BeginPlay();
 	EnableInput(GetWorld()->GetFirstPlayerController());
-
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC)
+	{
+		PC->bShowMouseCursor = true;
+		PC->bEnableClickEvents = true;
+		PC->bEnableMouseOverEvents = true;
+	}
 	if (InputComponent)
 	{
 		InputComponent->BindAction("LeftClick", IE_Pressed, this, &ARayCastClicker::HandleMouseClick);
@@ -48,12 +56,25 @@ void ARayCastClicker::HandleMouseClick()
 
 		if (GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params))
 		{
-			// if (!TargetTag.IsNone() && !HitResult.GetActor()->ActorHasTag(TargetTag))
-			// 	return;
-
 			FVector HitLocation = HitResult.ImpactPoint;
 			UE_LOG(LogTemp, Warning, TEXT("¡Colisión en: %s"), *HitLocation.ToString());
 			DrawDebugSphere(GetWorld(), HitLocation, 20.0f, 12, FColor::Green, false, 2.0f);
+
+			// Verificamos si el actor golpeado es de tipo AMarching o está contenido dentro de uno
+			AMarching* Terrain = Cast<AMarching>(HitResult.GetActor());
+			if (!Terrain && HitResult.Component.IsValid())
+			{
+				Terrain = Cast<AMarching>(HitResult.GetComponent()->GetOwner());
+			}
+
+			if (Terrain)
+			{
+				Terrain->GenerateHole(HitLocation);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("No se pudo hacer cast a AMarching desde el actor golpeado."));
+			}
 		}
 	}
 }

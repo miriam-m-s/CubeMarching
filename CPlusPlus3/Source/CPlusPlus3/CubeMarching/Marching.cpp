@@ -19,10 +19,81 @@ AMarching::AMarching():RuntimeVolume(nullptr)
 	
 }
 
+void AMarching::GenerateHole(FVector HitLocation)
+{
+	FVector localPos = HitLocation / 100.0f;
+	UE_LOG(LogTemp, Warning, TEXT("LocalPos: %s"), *localPos.ToString());
+
+	int centerX = FMath::FloorToInt(localPos.X);
+	int centerY = FMath::FloorToInt(localPos.Y);
+	int centerZ = FMath::FloorToInt(localPos.Z);
+	UE_LOG(LogTemp, Warning, TEXT("Center coords: X=%d, Y=%d, Z=%d"), centerX, centerY, centerZ);
+
+	if (centerX < 0 || centerX >= GridSize.X ||
+		centerY < 0 || centerY >= GridSize.Y ||
+		centerZ < 0 || centerZ >= GridSize.Z)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Center is out of bounds!"));
+		return;
+	}
+	int index=getTerrainIndex(centerX,centerY,centerZ);
+	TerrainMap[index] = FMath::Max(TerrainMap[index], 1.0f);
+
+	// Recalcular los chunks afectados
+	int chunkX = centerX / ChunkSize.X;
+	int chunkY = centerY / ChunkSize.Y;
+	FIntPoint chunkCoord(chunkX, chunkY);
+	UE_LOG(LogTemp, Warning, TEXT("ChunkCoord: X=%d, Y=%d"), chunkX, chunkY);
+
+	if (!Chunks.Contains(chunkCoord)) {
+		UE_LOG(LogTemp, Warning, TEXT("Chunk not found in map."));
+		return;
+	}
+
+	Chunk* CurrentChunk = Chunks[chunkCoord];
+	if (CurrentChunk) {
+		UE_LOG(LogTemp, Warning, TEXT("Resetting chunk mesh data"));
+		CurrentChunk->resetMeshData();
+	}
+
+	int startX = chunkX * ChunkSize.X;
+	int startY = chunkY * ChunkSize.Y;
+	FIntPoint LocalChunkSize = CurrentChunk->GetChunkLocalSize();
+	int endX = startX + LocalChunkSize.X;
+	int endY = startY + LocalChunkSize.Y;
+
+	for (int x = startX; x < endX; x++)
+	{
+		for (int y = startY; y < endY; y++)
+		{
+			for (int z = 0; z < GridSize.Z; z++)
+			{
+				float cube[8];
+
+				for (int cornerIndex = 0; cornerIndex < 8; cornerIndex++)
+				{
+					FVector corner = FVector(x, y, z) + CornerTable[cornerIndex];
+					cube[cornerIndex] = TerrainMap[getTerrainIndex(corner.X, corner.Y, corner.Z)];
+				}
+
+				MarchCube(FVector(x, y, z), cube,chunkCoord);
+			}
+		}
+	}
+
+
+	
+	BuildMesh(chunkCoord);
+	
+
+
+}
+
 void AMarching::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	UE_LOG(LogTemp, Warning, TEXT("TerrainMap size after creation: %d"), TerrainMap.Num());
+	GenerateTerrain();
 
 }
 
@@ -34,13 +105,13 @@ void AMarching::GenerateTerrain()
 {
 	//RuntimeVolume
 	
-
 	DeleteTerrain();
 	
 	TerrainMap.SetNum((GridSize.X + 1) * (GridSize.Y + 1) * (GridSize.Z + 1));
 	
 	UE_LOG(LogTemp, Warning, TEXT("Create Terrain"));
 	CreateTerrain();
+	UE_LOG(LogTemp, Warning, TEXT("TerrainMap size after creation: %d"), TerrainMap.Num());
 
 
 	//si el chunk es mas grande que grid se queda el grid con su tamaño 
@@ -95,8 +166,9 @@ void AMarching::DeleteTerrain()
 	
 	
 	TerrainMap.Empty();
+	UE_LOG(LogTemp, Warning, TEXT("empty size after creation: %d"), TerrainMap.Num());
 
-
+	UE_LOG(LogTemp, Warning, TEXT("Adios Terrene"));
 	for (auto& ChunkPair : Chunks)
 	{
 		if (ChunkPair.Value)
@@ -397,7 +469,7 @@ void AMarching::CubeIteration()
 		}
 	}
 
-float AMarching::getTerrainIndexHit(FVector worldposition)
+int AMarching::getTerrainIndexHit(FVector worldposition)
 {
 	FVector localPos = worldposition / 100.0f; 
 
@@ -413,10 +485,10 @@ float AMarching::getTerrainIndexHit(FVector worldposition)
 		return -1.0f; // fuera de los límites
 	}
 
-	int index = getTerrainIndex(x, y, z);
+	
 	
 
-	return TerrainMap[index];
+	return  getTerrainIndex(x, y, z);;
 	
 
 }

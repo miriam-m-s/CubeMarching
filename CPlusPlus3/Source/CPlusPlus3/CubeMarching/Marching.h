@@ -18,6 +18,7 @@ class CPLUSPLUS3_API AMarching : public AActor
 
 public:
 	AMarching();
+	void GenerateHole(FVector HitLocation);
 
 protected:
 	virtual void BeginPlay() override;
@@ -90,7 +91,7 @@ private:
 	const int getTerrainIndex( int x, int y, int z);
 	void generateChunk(FIntPoint  chunkCoord,FIntPoint LocalChunkSize);
 	void CubeIteration();
-	float getTerrainIndexHit(FVector worldposition);
+	int getTerrainIndexHit(FVector worldposition);
 	FIntPoint  NumChunks;
 	FIntPoint  Remainder;
 	
