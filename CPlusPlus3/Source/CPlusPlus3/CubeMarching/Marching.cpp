@@ -191,23 +191,6 @@ void AMarching::CreateTerrain()
 			
 		}
 	}
-	// for (int x = 0; x <= GridSize.X; x++)
-	// {
-	// 	for (int y = 0; y <= GridSize.Y; y++)
-	// 	{
-	// 		for (int z = 0; z <= GridSize.Z; z++)
-	// 		{
-	// 			FVector Position(x, y, z);
-	// 			FVector WorldPos = Position * 100.0f;
-	//
-	// 			if (FVector::Dist(WorldPos, FVector(15,15,3)) <= 10)
-	// 			{
-	// 				int index = getTerrainIndex(x, y, z);
-	// 				TerrainMap[index] = 10.0f; // Un valor claramente mayor que SurfaceLevel para forzar "aire"
-	// 			}
-	// 		}
-	// 	}
-	// }
 }
 
 void AMarching::BuildMesh(FIntPoint   chunkCoordinates)
@@ -413,6 +396,30 @@ void AMarching::CubeIteration()
 			}
 		}
 	}
+
+float AMarching::getTerrainIndexHit(FVector worldposition)
+{
+	FVector localPos = worldposition / 100.0f; 
+
+	int x = FMath::FloorToInt(localPos.X);
+	int y = FMath::FloorToInt(localPos.Y);
+	int z = FMath::FloorToInt(localPos.Z);
+
+	// Validar que está dentro del grid
+	if (x < 0 || x > GridSize.X ||
+		y < 0 || y > GridSize.Y ||
+		z < 0 || z > GridSize.Z)
+	{
+		return -1.0f; // fuera de los límites
+	}
+
+	int index = getTerrainIndex(x, y, z);
+	
+
+	return TerrainMap[index];
+	
+
+}
 
 
 

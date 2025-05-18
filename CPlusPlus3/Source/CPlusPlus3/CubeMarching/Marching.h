@@ -35,6 +35,8 @@ public:
 	float noiseScale=1.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMaterialInterface* Material;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector worldPosition;
 	UFUNCTION(CallInEditor, Category = "Marching Cubes")
 	void GenerateTerrain();
 	UFUNCTION(CallInEditor, Category = "Marching Cubes")
@@ -88,6 +90,7 @@ private:
 	const int getTerrainIndex( int x, int y, int z);
 	void generateChunk(FIntPoint  chunkCoord,FIntPoint LocalChunkSize);
 	void CubeIteration();
+	float getTerrainIndexHit(FVector worldposition);
 	FIntPoint  NumChunks;
 	FIntPoint  Remainder;
 	
