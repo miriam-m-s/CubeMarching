@@ -97,6 +97,7 @@ private:
 	 * @return The corresponding index for the given (x, y, z) position.
 	 */
 	const int getTerrainIndex( int x, int y, int z);
+	void IterateChunkVoxels(int i, int j, FIntPoint LocalChunkSize);
 	void generateChunk(FIntPoint  chunkCoord,FIntPoint LocalChunkSize);
 	void CubeIteration();
 	int getTerrainIndexHit(FVector worldposition);

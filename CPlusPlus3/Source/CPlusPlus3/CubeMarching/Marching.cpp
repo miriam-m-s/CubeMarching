@@ -63,11 +63,6 @@ void AMarching::GenerateHole(FVector HitLocation)
 					{
 						float dist = FMath::Sqrt(distSquared);
 						float t = 1.0f - (dist / radius); // 1.0 en el centro, 0.0 en el borde
-					
-						
-
-						float value = FMath::Lerp(0.0f, 0.9f, t); // 0 en borde, 0.9 en el centro
-
 						int index = getTerrainIndex(x, y, z);
 						if (TerrainMap.IsValidIndex(index))
 						{
@@ -112,33 +107,8 @@ void AMarching::GenerateHole(FVector HitLocation)
 	CurrentChunk->GetVertexMap().Empty();
 	CurrentChunk->GetVertices().Empty();
 	
-	
-	int startX = chunkX * ChunkSize.X;
-	int startY = chunkY * ChunkSize.Y;
-	FIntPoint LocalChunkSize = CurrentChunk->GetChunkLocalSize();
-	int endX = startX + LocalChunkSize.X;
-	int endY = startY + LocalChunkSize.Y;
-	
-	for (int x = startX; x < endX; x++)
-	{
-		for (int y = startY; y < endY; y++)
-		{
-			for (int z = 0; z < GridSize.Z; z++)
-			{
-				float cube[8];
-	
-				for (int cornerIndex = 0; cornerIndex < 8; cornerIndex++)
-				{
-					FVector corner = FVector(x, y, z) + CornerTable[cornerIndex];
-					cube[cornerIndex] = TerrainMap[getTerrainIndex(corner.X, corner.Y, corner.Z)];
-				}
-				MarchCube(FVector(x, y, z), cube,chunkCoord);
-			}
-		}
-	}
-	
-	
-	
+
+	IterateChunkVoxels(chunkX,chunkY,CurrentChunk->GetChunkLocalSize());
 	BuildMesh(chunkCoord);
 	
 
@@ -535,6 +505,37 @@ const int AMarching::getTerrainIndex( int x, int y, int z)
 }
 
 
+void AMarching::IterateChunkVoxels(int i, int j, FIntPoint LocalChunkSize)
+{
+	int startX = i * ChunkSize.X;
+	int startY = j * ChunkSize.Y;
+			
+
+	int endX = startX + LocalChunkSize.X;
+	int endY = startY + LocalChunkSize.Y;
+				
+				
+				
+				
+	for (int x = startX; x < endX; x++)
+	{
+		for (int y = startY; y < endY; y++)
+		{
+			for (int z = 0; z < GridSize.Z; z++)
+			{
+				float cube[8];
+
+				for (int cornerIndex = 0; cornerIndex < 8; cornerIndex++)
+				{
+					FVector corner = FVector(x, y, z) + CornerTable[cornerIndex];
+					cube[cornerIndex] = TerrainMap[getTerrainIndex(corner.X, corner.Y, corner.Z)];
+				}
+
+				MarchCube(FVector(x, y, z), cube,FIntPoint(i, j));
+			}
+		}
+	}
+}
 
 void AMarching::CubeIteration()
 {
@@ -550,37 +551,8 @@ void AMarching::CubeIteration()
 				
 
 				generateChunk(FIntPoint(i, j), LocalChunkSize);
-
 			
-				int startX = i * ChunkSize.X;
-				int startY = j * ChunkSize.Y;
-			
-
-				int endX = startX + LocalChunkSize.X;
-				int endY = startY + LocalChunkSize.Y;
-				
-				
-				
-				
-				for (int x = startX; x < endX; x++)
-				{
-					for (int y = startY; y < endY; y++)
-					{
-						for (int z = 0; z < GridSize.Z; z++)
-						{
-							float cube[8];
-
-							for (int cornerIndex = 0; cornerIndex < 8; cornerIndex++)
-							{
-								FVector corner = FVector(x, y, z) + CornerTable[cornerIndex];
-								cube[cornerIndex] = TerrainMap[getTerrainIndex(corner.X, corner.Y, corner.Z)];
-							}
-
-							MarchCube(FVector(x, y, z), cube,FIntPoint(i, j));
-						}
-					}
-				}
-
+				IterateChunkVoxels(i, j, LocalChunkSize);
 				BuildMesh(FIntPoint(i, j));
 				GenerateFoliage(FIntPoint(i, j));
 				
