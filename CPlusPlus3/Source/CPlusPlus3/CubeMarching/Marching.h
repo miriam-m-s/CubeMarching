@@ -29,6 +29,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FIntVector GridSize = FIntVector(30, 30, 30);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool CollisionMesh = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FIntPoint  ChunkSize = FIntPoint (20, 10);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float SurfaceLevel=0.0f;
