@@ -10,6 +10,7 @@ class UProceduralMeshComponent;
 class Chunk;
 class UMaterialInterface;
 class ARuntimeVirtualTextureVolume;
+class UStaticMesh;
 
 UCLASS()
 class CPLUSPLUS3_API AMarching : public AActor
@@ -40,6 +41,8 @@ public:
 	UMaterialInterface* Material;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector worldPosition;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grass")
+	TArray<UStaticMesh*> StaticMeshes;
 	UFUNCTION(CallInEditor, Category = "Marching Cubes")
 	void GenerateTerrain();
 	UFUNCTION(CallInEditor, Category = "Marching Cubes")
@@ -50,7 +53,7 @@ public:
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 private:
-
+	void GenerateFoliage(FIntPoint chunkCoordinates);
 	/**
 	 * Generates the scalar field values (density) used for terrain generation.
 	 * Typically fills an array with values based on a noise function like Perlin or Simplex.

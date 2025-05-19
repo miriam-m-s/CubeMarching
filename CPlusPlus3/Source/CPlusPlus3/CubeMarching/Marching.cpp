@@ -4,19 +4,24 @@
 #include "ProceduralMeshComponent.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Components/InputComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "VT/RuntimeVirtualTextureVolume.h"
 	
 #include "Field/FieldSystemNoiseAlgo.h"
-
+#include "Engine/StaticMesh.h"
 #include "GameFramework/PlayerController.h"
 #include "Operations/EmbedSurfacePath.h"
 
 AMarching::AMarching():RuntimeVolume(nullptr)
 {
 	
+	UStaticMesh* meash=nullptr;
 
-
-	
+	if (StaticMeshes.Num() > 0)
+	{
+		UStaticMesh* ChosenMesh = StaticMeshes[FMath::RandRange(0, StaticMeshes.Num() - 1)];
+		// usar ChosenMesh con un UInstancedStaticMeshComponent, por ejemplo
+	}
 }
 
 void AMarching::GenerateHole(FVector HitLocation)
@@ -54,7 +59,7 @@ void AMarching::GenerateHole(FVector HitLocation)
 					{
 						// Hacerlo "aire" (positivo o más cercano a 0)
 						if (TerrainMap.IsValidIndex(getTerrainIndex(x, y, z)))
-							TerrainMap[getTerrainIndex(x, y, z)] = 1.0f;
+							TerrainMap[getTerrainIndex(x, y, z)] = 0.9f;
 					}
 				}
 			}
@@ -251,6 +256,62 @@ void AMarching::OnConstruction(const FTransform& Transform)
 		
 	
 }
+
+void AMarching::GenerateFoliage(FIntPoint chunkCoordinates)
+{
+	if (StaticMeshes.Num() <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No hay mallas asignadas en StaticMeshes."));
+		return;
+	}
+
+	UStaticMesh* ChosenMesh = StaticMeshes[FMath::RandRange(0, StaticMeshes.Num() - 1)];
+	UE_LOG(LogTemp, Warning, TEXT("Usando malla: %s"), *ChosenMesh->GetName());
+
+	UInstancedStaticMeshComponent* GrassMesh = NewObject<UInstancedStaticMeshComponent>(this);
+	if (!GrassMesh)
+	{
+		UE_LOG(LogTemp, Error, TEXT("No se pudo crear el componente de césped."));
+		return;
+	}
+
+	GrassMesh->RegisterComponent();
+	GrassMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	GrassMesh->SetStaticMesh(ChosenMesh);
+
+	if (!Chunks.Contains(chunkCoordinates))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Chunk no encontrado en la posición (%d, %d)."), chunkCoordinates.X, chunkCoordinates.Y);
+		return;
+	}
+
+	Chunk* CurrentChunk = Chunks[chunkCoordinates];
+	if (!CurrentChunk)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Chunk encontrado es nulo."));
+		return;
+	}
+
+	const TArray<FVector>& Vertices = CurrentChunk->GetVertices();
+	UE_LOG(LogTemp, Warning, TEXT("Chunk tiene %d vértices."), Vertices.Num());
+
+	int count = 0;
+	for (const FVector& Vertex : Vertices)
+	{
+		FVector WorldLocation = Vertex;
+
+		FTransform InstanceTransform;
+		InstanceTransform.SetLocation(WorldLocation);
+		InstanceTransform.SetRotation(FQuat::MakeFromEuler(FVector(0, 0, FMath::RandRange(0.f, 360.f))));
+		InstanceTransform.SetScale3D(FVector(0.5f));
+
+		GrassMesh->AddInstance(InstanceTransform);
+		count++;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Se han instanciado %d elementos de césped."), count);
+}
+
 
 
 void AMarching::CreateTerrain()
@@ -503,6 +564,8 @@ void AMarching::CubeIteration()
 				}
 
 				BuildMesh(FIntPoint(i, j));
+				GenerateFoliage(FIntPoint(i, j));
+				
 			}
 		}
 	}
