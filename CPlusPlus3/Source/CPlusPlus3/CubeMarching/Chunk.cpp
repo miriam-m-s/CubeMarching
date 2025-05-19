@@ -1,5 +1,5 @@
 ﻿#include "Chunk.h"
-
+#include "Components/InstancedStaticMeshComponent.h"
 #include "ProceduralMeshComponent.h"
 
 Chunk::Chunk():Mesh(nullptr)
@@ -21,6 +21,11 @@ void Chunk::resetMeshData()
 UProceduralMeshComponent*& Chunk::GetMesh()
 {
 	return Mesh;
+}
+
+UInstancedStaticMeshComponent*& Chunk::GetGrassMesh()
+{
+	return GrassMesh;
 }
 
 TArray<float>& Chunk::GetTerrainMap()

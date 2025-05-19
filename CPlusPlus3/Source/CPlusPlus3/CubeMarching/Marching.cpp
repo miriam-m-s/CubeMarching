@@ -193,6 +193,8 @@ void AMarching::generateChunk(FIntPoint  chunkCoord,FIntPoint LocalChunkSize)
 	Chunk* CurrentChunk = Chunks[chunkCoord];
 
 	
+
+	
 	
 	UProceduralMeshComponent* NewMesh = NewObject<UProceduralMeshComponent>(this);
 	NewMesh->RegisterComponent();
@@ -201,6 +203,13 @@ void AMarching::generateChunk(FIntPoint  chunkCoord,FIntPoint LocalChunkSize)
 
 	
 	Chunks[chunkCoord]->GetChunkLocalSize() = LocalChunkSize;
+	Chunks[chunkCoord]->GetGrassMesh() = NewObject<UInstancedStaticMeshComponent>(this);
+	if (!	Chunks[chunkCoord]->GetGrassMesh())
+	{
+		UE_LOG(LogTemp, Error, TEXT("No se pudo crear el componente de césped."));
+		return;
+	}
+	Chunks[chunkCoord]->GetGrassMesh()->RegisterComponent();
 	
 }
 
@@ -219,6 +228,11 @@ void AMarching::DeleteTerrain()
 			if (ChunkPair.Value->GetMesh())
 			{
 				ChunkPair.Value->GetMesh()->DestroyComponent(); // Elimina el componente visual
+			}
+			if (ChunkPair.Value->GetGrassMesh())
+			{
+				ChunkPair.Value->GetGrassMesh()->ClearInstances();
+				ChunkPair.Value->GetGrassMesh()->DestroyComponent();
 			}
 			delete ChunkPair.Value;
 			ChunkPair.Value = nullptr;
@@ -264,21 +278,7 @@ void AMarching::GenerateFoliage(FIntPoint chunkCoordinates)
 		UE_LOG(LogTemp, Warning, TEXT("No hay mallas asignadas en StaticMeshes."));
 		return;
 	}
-
-	UStaticMesh* ChosenMesh = StaticMeshes[FMath::RandRange(0, StaticMeshes.Num() - 1)];
-	UE_LOG(LogTemp, Warning, TEXT("Usando malla: %s"), *ChosenMesh->GetName());
-
-	UInstancedStaticMeshComponent* GrassMesh = NewObject<UInstancedStaticMeshComponent>(this);
-	if (!GrassMesh)
-	{
-		UE_LOG(LogTemp, Error, TEXT("No se pudo crear el componente de césped."));
-		return;
-	}
-
-	GrassMesh->RegisterComponent();
-	GrassMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-	GrassMesh->SetStaticMesh(ChosenMesh);
-
+	
 	if (!Chunks.Contains(chunkCoordinates))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Chunk no encontrado en la posición (%d, %d)."), chunkCoordinates.X, chunkCoordinates.Y);
@@ -291,6 +291,8 @@ void AMarching::GenerateFoliage(FIntPoint chunkCoordinates)
 		UE_LOG(LogTemp, Error, TEXT("Chunk encontrado es nulo."));
 		return;
 	}
+	UInstancedStaticMeshComponent* GrassMesh= CurrentChunk->GetGrassMesh();
+	GrassMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
 	const TArray<FVector>& Vertices = CurrentChunk->GetVertices();
 	UE_LOG(LogTemp, Warning, TEXT("Chunk tiene %d vértices."), Vertices.Num());
@@ -298,6 +300,8 @@ void AMarching::GenerateFoliage(FIntPoint chunkCoordinates)
 	int count = 0;
 	for (const FVector& Vertex : Vertices)
 	{
+		UStaticMesh* ChosenMesh = StaticMeshes[FMath::RandRange(0, StaticMeshes.Num() - 1)];
+		GrassMesh->SetStaticMesh(ChosenMesh);
 		FVector WorldLocation = Vertex;
 
 		FTransform InstanceTransform;
