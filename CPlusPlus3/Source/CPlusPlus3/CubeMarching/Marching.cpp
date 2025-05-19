@@ -26,7 +26,7 @@ AMarching::AMarching():RuntimeVolume(nullptr)
 
 void AMarching::GenerateHole(FVector HitLocation)
 {
-	FVector localPos = HitLocation / 100.0f;
+	FVector localPos = HitLocation / TriangleScale;
 	UE_LOG(LogTemp, Warning, TEXT("LocalPos: %s"), *localPos.ToString());
 
 	int centerX = FMath::FloorToInt(localPos.X);
@@ -54,12 +54,25 @@ void AMarching::GenerateHole(FVector HitLocation)
 					y >= 0 && y < GridSize.Y &&
 					z >= 0 && z < GridSize.Z)
 				{
-					float distSquared = FMath::Square(x - centerX) + FMath::Square(y - centerY) + FMath::Square(z - centerZ);
+					float dx = x - centerX;
+					float dy = y - centerY;
+					float dz = z - centerZ;
+					float distSquared = dx * dx + dy * dy + dz * dz;
+
 					if (distSquared <= radius * radius)
 					{
-						// Hacerlo "aire" (positivo o más cercano a 0)
-						if (TerrainMap.IsValidIndex(getTerrainIndex(x, y, z)))
-							TerrainMap[getTerrainIndex(x, y, z)] = 0.9f;
+						float dist = FMath::Sqrt(distSquared);
+						float t = 1.0f - (dist / radius); // 1.0 en el centro, 0.0 en el borde
+					
+						
+
+						float value = FMath::Lerp(0.0f, 0.9f, t); // 0 en borde, 0.9 en el centro
+
+						int index = getTerrainIndex(x, y, z);
+						if (TerrainMap.IsValidIndex(index))
+						{
+							TerrainMap[index] += t*2;
+						}
 					}
 				}
 			}
@@ -135,6 +148,7 @@ void AMarching::GenerateHole(FVector HitLocation)
 void AMarching::BeginPlay()
 {
 	Super::BeginPlay();
+	DeleteTerrain();
 	UE_LOG(LogTemp, Warning, TEXT("TerrainMap size after creation: %d"), TerrainMap.Num());
 	GenerateTerrain();
 
@@ -414,15 +428,15 @@ void AMarching::BuildMesh(FIntPoint   chunkCoordinates)
 
 	FVector ChunkOrigin = FVector(chunkCoordinates.X * ChunkSize.X,
 								  chunkCoordinates.Y * ChunkSize.Y,
-								    0) * 100.f; 
+								    0) * TriangleScale; 
 
 	for (int32 i = 0; i < CurrentChunk->GetVertices().Num(); ++i)
 	{
 		//lo desplazamos como si su sistema de coordenadas fuera los chunks
 		FVector LocalVertex = CurrentChunk->GetVertices()[i] - ChunkOrigin;
 		//Normalizamos para sacar sus uvs
-		float U = LocalVertex.X / (ChunkSize.X * 100.0f);
-		float V = LocalVertex.Y / (ChunkSize.Y * 100.0f);
+		float U = LocalVertex.X / (ChunkSize.X * TriangleScale);
+		float V = LocalVertex.Y / (ChunkSize.Y * TriangleScale);
 
 		uvs[i] = FVector2D(U, V);
 	}
@@ -494,7 +508,7 @@ void AMarching::MarchCube(FVector pos,float* cube,FIntPoint chunkCoordinates)
 			}
 			else
 			{
-				Chunks[chunkCoordinates]->GetVertices().Add(vertice * 100);
+				Chunks[chunkCoordinates]->GetVertices().Add(vertice * TriangleScale);
 				int newIndex = Chunks[chunkCoordinates]->GetVertices().Num() - 1;
 				 Chunks[chunkCoordinates]->GetVertexMap().Add(snapped, newIndex);
 				vertIndices[j] = newIndex;
@@ -576,7 +590,7 @@ void AMarching::CubeIteration()
 
 int AMarching::getTerrainIndexHit(FVector worldposition)
 {
-	FVector localPos = worldposition / 100.0f; 
+	FVector localPos = worldposition / TriangleScale; 
 
 	int x = FMath::FloorToInt(localPos.X);
 	int y = FMath::FloorToInt(localPos.Y);

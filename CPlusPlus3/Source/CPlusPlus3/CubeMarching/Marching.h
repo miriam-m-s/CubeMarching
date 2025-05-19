@@ -30,7 +30,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FIntVector GridSize = FIntVector(30, 30, 30);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool CollisionMesh = false;
+	float  TriangleScale = 50;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool CollisionMesh = true;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FIntPoint  ChunkSize = FIntPoint (20, 10);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -43,6 +45,7 @@ public:
 	FVector worldPosition;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grass")
 	TArray<UStaticMesh*> StaticMeshes;
+	
 	UFUNCTION(CallInEditor, Category = "Marching Cubes")
 	void GenerateTerrain();
 	UFUNCTION(CallInEditor, Category = "Marching Cubes")

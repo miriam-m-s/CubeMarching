@@ -13,10 +13,27 @@
   <component name="ChangeListManager">
     <list default="true" id="87a2a001-1d87-4e86-b1d3-c109f3d22d15" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.CPlusPlus3/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CPlusPlus3/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/C/ZH/AQY1UESOT8RWY0CARE9C2T.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Chunk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Chunk.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Chunk.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Chunk.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CPlusPlus3.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/CPlusPlus3.sln.DotSettings.user" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/0/0O/35JDFUFZR4S2FMKCK7M9P2.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/1/SM/JCZ63LTCBUZ8LEVVC8BTFQ.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/2/VQ/2M52PO2780HP9GE04LCNXW.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/3/EZ/4NWJ2IRV0RT70SUBHB9XUY.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/6/1O/85B58IDNE6CX0FE3M9YI47.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/6/54/BOF5CE4OPKKPURNZTKBCU2.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/7/WP/J79FT6RVTZROWZYD2PW28E.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/8/ZX/BAJWL9WANJ9YUXDSWUUZCT.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/9/79/XKHPEGNM8MDTC4PDACAG1F.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/9/OV/MKD3SJKLGLSVO5EH3QK4VI.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/A/6K/Y2K8MPBQV61I82D9LWO53V.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/A/RA/2N65XQGU2B0PQTESH24F9Z.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/B/WH/QTFFZIL6I0A3NK30L37LLI.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/C/QL/K5470ANQ560W7W40PO94W6.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/D/9U/8H3JG3TU03CTS8OOJFZAV3.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/D/IA/KGZ150M04S0QIK5AU74Z3H.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/E/DB/ZLJ1MLS4TUCY7EZUFA3ZYB.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/ThirdPerson/Maps/ThirdPersonMap/F/2V/ALF450YA4O4UIDPR5PMW7D.uasset" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -167,6 +184,7 @@
       <workItem from="1747432058787" duration="1156000" />
       <workItem from="1747602287600" duration="7823000" />
       <workItem from="1747663910594" duration="10065000" />
+      <workItem from="1747694726538" duration="664000" />
     </task>
     <servers />
   </component>
