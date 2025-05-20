@@ -21,6 +21,7 @@ public:
 	AMarching();
 	void GenerateHole(FVector HitLocation);
 
+
 protected:
 	virtual void BeginPlay() override;
 	
@@ -56,6 +57,8 @@ public:
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 private:
+	bool IsInBounds(int x, int y, int z) const;
+	void ApplySphericalHole(int centerX, int centerY, int centerZ, int radius);
 	void GenerateFoliage(FIntPoint chunkCoordinates);
 	/**
 	 * Generates the scalar field values (density) used for terrain generation.
@@ -100,13 +103,17 @@ private:
 	void IterateChunkVoxels(int i, int j, FIntPoint LocalChunkSize);
 	void generateChunk(FIntPoint  chunkCoord,FIntPoint LocalChunkSize);
 	void CubeIteration();
-	int getTerrainIndexHit(FVector worldposition);
+
 	FIntPoint  NumChunks;
 	FIntPoint  Remainder;
 	
 	TArray<Chunk*> chunks;
-
-	TArray<float> TerrainMap;
+	struct terrain
+	{
+		float value=0.0f;
+		float vertexColor = 0.0f;
+	};
+	TArray<terrain> TerrainMap;
 	ARuntimeVirtualTextureVolume* RuntimeVolume;
 
 	TMap<FIntPoint , Chunk*> Chunks;

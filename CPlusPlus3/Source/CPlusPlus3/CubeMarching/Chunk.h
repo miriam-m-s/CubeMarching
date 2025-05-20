@@ -10,6 +10,7 @@ class Chunk
 	TMap<FVector, int32> VertexMap;
 	FIntPoint chunkLocalSize;
 	UInstancedStaticMeshComponent* GrassMesh;
+	TArray<FLinearColor> vertexColors;
 public:
 	Chunk();
 
@@ -21,6 +22,7 @@ public:
 	TArray<FVector>& GetVertices();
 	FIntPoint& GetChunkLocalSize();
 	TArray<int32>& GetTriangles();
+	TArray<FLinearColor>& GetVertexColors();
 	TMap<FVector, int32>& GetVertexMap();
 
 

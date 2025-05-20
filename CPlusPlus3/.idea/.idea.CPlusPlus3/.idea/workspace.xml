@@ -13,6 +13,9 @@
   <component name="ChangeListManager">
     <list default="true" id="87a2a001-1d87-4e86-b1d3-c109f3d22d15" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.CPlusPlus3/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CPlusPlus3/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CubeMarching/M_terrain.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/CubeMarching/M_terrain.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Chunk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Chunk.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Chunk.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Chunk.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/CPlusPlus3/CubeMarching/Marching.h" afterDir="false" />
     </list>
@@ -165,7 +168,7 @@
       <workItem from="1747432058787" duration="1156000" />
       <workItem from="1747602287600" duration="7823000" />
       <workItem from="1747663910594" duration="10065000" />
-      <workItem from="1747694726538" duration="1405000" />
+      <workItem from="1747694726538" duration="4909000" />
     </task>
     <servers />
   </component>

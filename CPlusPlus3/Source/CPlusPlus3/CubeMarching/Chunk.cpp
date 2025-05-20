@@ -1,6 +1,7 @@
 ﻿#include "Chunk.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "ProceduralMeshComponent.h"
+#include "DynamicMesh/DynamicMesh3.h"
 
 Chunk::Chunk():Mesh(nullptr)
 {
@@ -14,6 +15,7 @@ void Chunk::resetMeshData()
 	Vertices.Empty();
 	Triangles.Empty();
 	VertexMap.Empty();
+	vertexColors.Empty();
 
 	
 }
@@ -46,6 +48,11 @@ FIntPoint& Chunk::GetChunkLocalSize()
 TArray<int32>& Chunk::GetTriangles()
 {
 	return Triangles;
+}
+
+TArray<FLinearColor>& Chunk::GetVertexColors()
+{
+	return vertexColors;
 }
 
 TMap<FVector, int32>& Chunk::GetVertexMap()

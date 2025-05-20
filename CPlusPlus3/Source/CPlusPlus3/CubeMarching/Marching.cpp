@@ -34,85 +34,74 @@ void AMarching::GenerateHole(FVector HitLocation)
 	int centerZ = FMath::FloorToInt(localPos.Z);
 	UE_LOG(LogTemp, Warning, TEXT("Center coords: X=%d, Y=%d, Z=%d"), centerX, centerY, centerZ);
 
-	if (centerX < 0 || centerX >= GridSize.X ||
-		centerY < 0 || centerY >= GridSize.Y ||
-		centerZ < 0 || centerZ >= GridSize.Z)
+	if (!IsInBounds(centerX, centerY, centerZ))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Center is out of bounds!"));
 		return;
 	}
+
+	const int Radius = 5;
+	ApplySphericalHole(centerX, centerY, centerZ, Radius);
+
+	// Recalculo del chunk afectado
+
+	// TODO: que se pongan todos los chunks que afecta el radio total
 	
-	// ----- CAMBIO: Agujero esférico -----
-	int radius = 3;
-	for (int x = centerX - radius; x <= centerX + radius; x++)
-	{
-		for (int y = centerY - radius; y <= centerY + radius; y++)
-		{
-			for (int z = centerZ - radius; z <= centerZ + radius; z++)
-			{
-				if (x >= 0 && x < GridSize.X &&
-					y >= 0 && y < GridSize.Y &&
-					z >= 0 && z < GridSize.Z)
-				{
-					float dx = x - centerX;
-					float dy = y - centerY;
-					float dz = z - centerZ;
-					float distSquared = dx * dx + dy * dy + dz * dz;
-
-					if (distSquared <= radius * radius)
-					{
-						float dist = FMath::Sqrt(distSquared);
-						float t = 1.0f - (dist / radius); // 1.0 en el centro, 0.0 en el borde
-						int index = getTerrainIndex(x, y, z);
-						if (TerrainMap.IsValidIndex(index))
-						{
-							TerrainMap[index] += t*2;
-						}
-					}
-				}
-			}
-		}
-	}
-
-
-
-	
-
-	// Recalcular los chunks afectados
 	int chunkX = centerX / ChunkSize.X;
 	int chunkY = centerY / ChunkSize.Y;
 	FIntPoint chunkCoord(chunkX, chunkY);
-	UE_LOG(LogTemp, Warning, TEXT("ChunkCoord: X=%d, Y=%d"), chunkX, chunkY);
-
-	if (!Chunks.Contains(chunkCoord)) {
-		UE_LOG(LogTemp, Warning, TEXT("Chunk not found in map."));
-		return;
-	}
-	
+	if (!Chunks.Contains(chunkCoord)) return;
 	Chunk* CurrentChunk = Chunks[chunkCoord];
 	if (!CurrentChunk)return;
-	if (CurrentChunk->GetMesh())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ChaoMalla."));
-		CurrentChunk->GetMesh()->DestroyComponent(); // Elimina el componente visual
-		
-	}
-	
+	if (CurrentChunk->GetMesh())CurrentChunk->GetMesh()->DestroyComponent();
 	
 	UProceduralMeshComponent* NewMesh = NewObject<UProceduralMeshComponent>(this);
 	NewMesh->RegisterComponent();
 	NewMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 	CurrentChunk->GetMesh() = NewMesh;
-	CurrentChunk->GetTriangles().Empty();
-	CurrentChunk->GetVertexMap().Empty();
-	CurrentChunk->GetVertices().Empty();
-	
+	CurrentChunk->resetMeshData();
 
 	IterateChunkVoxels(chunkX,chunkY,CurrentChunk->GetChunkLocalSize());
 	BuildMesh(chunkCoord);
 	
 
 
+}
+bool AMarching::IsInBounds(int x, int y, int z) const
+{
+	return x >= 0 && x < GridSize.X &&
+		   y >= 0 && y < GridSize.Y &&
+		   z >= 0 && z < GridSize.Z;
+}
+void AMarching::ApplySphericalHole(int centerX, int centerY, int centerZ, int radius)
+{
+	for (int x = centerX - radius; x <= centerX + radius; x++)
+	{
+		for (int y = centerY - radius; y <= centerY + radius; y++)
+		{
+			for (int z = centerZ - radius; z <= centerZ + radius; z++)
+			{
+				if (!IsInBounds(x, y, z)) continue;
+
+				float dx = x - centerX;
+				float dy = y - centerY;
+				float dz = z - centerZ;
+				float distSquared = dx * dx + dy * dy + dz * dz;
+
+				if (distSquared <= radius * radius)
+				{
+					float dist = FMath::Sqrt(distSquared);
+					float t = 1.0f - (dist / radius); // 1.0 en el centro, 0.0 en el borde
+					int index = getTerrainIndex(x, y, z);
+					if (TerrainMap.IsValidIndex(index))
+					{
+						TerrainMap[index].value += t * 5.0f;
+						TerrainMap[index].vertexColor=t;
+					}
+				}
+			}
+		}
+	}
 }
 
 void AMarching::BeginPlay()
@@ -344,7 +333,7 @@ void AMarching::CreateTerrain()
 				{
 				
 					float density = z - height; // Positivo: aire, Negativo: sólido
-					TerrainMap[getTerrainIndex(x, y, z)] = density;
+					TerrainMap[getTerrainIndex(x, y, z)].value = density;
 				}
 
 			
@@ -363,7 +352,7 @@ void AMarching::BuildMesh(FIntPoint   chunkCoordinates)
 	TArray<FVector> normals;
 	TArray<FVector2D> uvs;
 	TArray<FProcMeshTangent> tangents;
-	TArray<FLinearColor> vertexColors;
+	
 
 	// Inicializa las normales, UVs y demás arrays
 	//UE_LOG(LogTemp, Warning, TEXT("Initializing mesh data arrays"));
@@ -411,15 +400,15 @@ void AMarching::BuildMesh(FIntPoint   chunkCoordinates)
 		uvs[i] = FVector2D(U, V);
 	}
 	tangents.Init(FProcMeshTangent(1, 0, 0), CurrentChunk->GetVertices().Num());
-	float R = FMath::FRand(); // Valor entre 0.0 y 1.0
-	float G = FMath::FRand();
-	float B = FMath::FRand();
+	// float R = FMath::FRand(); // Valor entre 0.0 y 1.0
+	// float G = FMath::FRand();
+	// float B = FMath::FRand();
 
-	vertexColors.Init(FLinearColor(R, G, B, 1.0f), CurrentChunk->GetVertices().Num());
+	
 
 	// UE_LOG(LogTemp, Warning, TEXT("Calling CreateMeshSection_LinearColor"));
 	// Crea la malla usando los datos
-	CurrentChunk->GetMesh()->CreateMeshSection_LinearColor(0, CurrentChunk->GetVertices(),CurrentChunk->GetTriangles(), normals, uvs, vertexColors, tangents, CollisionMesh);
+	CurrentChunk->GetMesh()->CreateMeshSection_LinearColor(0, CurrentChunk->GetVertices(),CurrentChunk->GetTriangles(), normals, uvs, CurrentChunk->GetVertexColors(), tangents, CollisionMesh);
 	if (Material)
 	{
 		CurrentChunk->GetMesh()->SetMaterial(0,Material);
@@ -465,8 +454,11 @@ void AMarching::MarchCube(FVector pos,float* cube,FIntPoint chunkCoordinates)
 
 			FVector vert1 = pos + EdgeTable[indice][0];
 			FVector vert2 = pos + EdgeTable[indice][1];
-			float noise1 = TerrainMap[getTerrainIndex(vert1.X, vert1.Y, vert1.Z)];
-			float noise2 = TerrainMap[getTerrainIndex(vert2.X, vert2.Y, vert2.Z)];
+			float noise1 = TerrainMap[getTerrainIndex(vert1.X, vert1.Y, vert1.Z)].value;
+			float noise2 = TerrainMap[getTerrainIndex(vert2.X, vert2.Y, vert2.Z)].value;
+			float color1 = TerrainMap[getTerrainIndex(vert1.X, vert1.Y, vert1.Z)].vertexColor;
+			float color2 = TerrainMap[getTerrainIndex(vert2.X, vert2.Y, vert2.Z)].vertexColor;
+			float color=color1+color2/2.0f;
 			float t = (SurfaceLevel - noise1) / (noise2 - noise1);
 			FVector vertice = FMath::Lerp(vert1, vert2, t);
 			FVector snapped = vertice.GridSnap(0.01f);
@@ -479,6 +471,7 @@ void AMarching::MarchCube(FVector pos,float* cube,FIntPoint chunkCoordinates)
 			else
 			{
 				Chunks[chunkCoordinates]->GetVertices().Add(vertice * TriangleScale);
+				Chunks[chunkCoordinates]->GetVertexColors().Add(FLinearColor(color,0.0f,0.0f));
 				int newIndex = Chunks[chunkCoordinates]->GetVertices().Num() - 1;
 				 Chunks[chunkCoordinates]->GetVertexMap().Add(snapped, newIndex);
 				vertIndices[j] = newIndex;
@@ -528,7 +521,7 @@ void AMarching::IterateChunkVoxels(int i, int j, FIntPoint LocalChunkSize)
 				for (int cornerIndex = 0; cornerIndex < 8; cornerIndex++)
 				{
 					FVector corner = FVector(x, y, z) + CornerTable[cornerIndex];
-					cube[cornerIndex] = TerrainMap[getTerrainIndex(corner.X, corner.Y, corner.Z)];
+					cube[cornerIndex] = TerrainMap[getTerrainIndex(corner.X, corner.Y, corner.Z)].value;
 				}
 
 				MarchCube(FVector(x, y, z), cube,FIntPoint(i, j));
@@ -560,29 +553,6 @@ void AMarching::CubeIteration()
 		}
 	}
 
-int AMarching::getTerrainIndexHit(FVector worldposition)
-{
-	FVector localPos = worldposition / TriangleScale; 
-
-	int x = FMath::FloorToInt(localPos.X);
-	int y = FMath::FloorToInt(localPos.Y);
-	int z = FMath::FloorToInt(localPos.Z);
-
-	// Validar que está dentro del grid
-	if (x < 0 || x > GridSize.X ||
-		y < 0 || y > GridSize.Y ||
-		z < 0 || z > GridSize.Z)
-	{
-		return -1.0f; // fuera de los límites
-	}
-
-	
-	
-
-	return  getTerrainIndex(x, y, z);;
-	
-
-}
 
 
 
