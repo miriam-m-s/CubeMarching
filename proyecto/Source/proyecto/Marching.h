@@ -75,6 +75,8 @@ private:
 	bool IsInBounds(int x, int y, int z) const;
 	void ApplySphericalHole(int centerX, int centerY, int centerZ, int radius);
 	void GenerateFoliage(FIntPoint chunkCoordinates);
+	void DeleteFoliage(FIntPoint chunkCoordinates);
+
 	void GenerateFoliageInPoint();
 	/**
 	 * Generates the scalar field values (density) used for terrain generation.
@@ -118,7 +120,7 @@ private:
 	const int getTerrainIndex( int x, int y, int z);
 	void IterateChunkVoxels(int i, int j, FIntPoint LocalChunkSize);
 	void generateChunk(FIntPoint  chunkCoord,FIntPoint LocalChunkSize);
-	void CubeIteration();
+	void CubeIteration(bool genFoliage);
 
 	FIntPoint  NumChunks;
 	FIntPoint  Remainder;
@@ -426,5 +428,6 @@ private:
 
     };
 };
+
 
  

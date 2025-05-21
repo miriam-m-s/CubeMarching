@@ -6,6 +6,7 @@ class Chunk
 	UProceduralMeshComponent* Mesh;
 	TArray<float> TerrainMap;
 	TArray<FVector> Vertices;
+	TArray<bool> MeshBoolean;
 	TArray<int32> Triangles;
 	TMap<FVector, int32> VertexMap;
 	FIntPoint chunkLocalSize;
@@ -20,6 +21,7 @@ public:
 	UInstancedStaticMeshComponent*& GetGrassMesh();         // puntero por referencia
 	TArray<float>& GetTerrainMap();
 	TArray<FVector>& GetVertices();
+	TArray<bool>& GetMeshBoolean();
 	FIntPoint& GetChunkLocalSize();
 	TArray<int32>& GetTriangles();
 	TArray<FLinearColor>& GetVertexColors();

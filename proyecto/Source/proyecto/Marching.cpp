@@ -72,6 +72,7 @@ void AMarching::GenerateHole(FVector HitLocation)
 	IterateChunkVoxels(chunkX,chunkY,CurrentChunk->GetChunkLocalSize());
 	BuildMesh(chunkCoord);
 	GenerateFoliage(chunkCoord);
+
 	
 
 
@@ -160,7 +161,7 @@ void AMarching::GenerateTerrain()
 
 	
 	
-	CubeIteration();
+	CubeIteration(true);
 }
 void AMarching::generateChunk(FIntPoint  chunkCoord,FIntPoint LocalChunkSize)
 {
@@ -273,7 +274,7 @@ void AMarching::GenerateFoliage(FIntPoint chunkCoordinates)
 	}
 	UInstancedStaticMeshComponent* GrassMesh= CurrentChunk->GetGrassMesh();
 	GrassMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-
+	CurrentChunk->GetGrassMesh()->SetCastShadow(false);
 	const TArray<FVector>& Vertices = CurrentChunk->GetVertices();
 	UE_LOG(LogTemp, Warning, TEXT("Chunk tiene %d vértices."), Vertices.Num());
 
@@ -295,7 +296,50 @@ void AMarching::GenerateFoliage(FIntPoint chunkCoordinates)
 		count++;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Se han instanciado %d elementos de césped."), count);
+	
+}
+
+void AMarching::DeleteFoliage(FIntPoint chunkCoordinates)
+{
+	if (StaticMeshes.Num() <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No hay mallas asignadas en StaticMeshes."));
+		return;
+	}
+
+	if (!Chunks.Contains(chunkCoordinates))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Chunk no encontrado en la posición (%d, %d)."), chunkCoordinates.X, chunkCoordinates.Y);
+		return;
+	}
+
+	Chunk* CurrentChunk = Chunks[chunkCoordinates];
+	if (!CurrentChunk)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Chunk encontrado es nulo."));
+		return;
+	}
+
+	UInstancedStaticMeshComponent* GrassMesh = CurrentChunk->GetGrassMesh();
+	GrassMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+
+	const TArray<bool>& GrassBool = CurrentChunk->GetMeshBoolean();
+
+	// ✅ Recorremos instancias
+	for (int32 i = 0; i < GrassBool.Num(); ++i)
+	{
+		if (i >= GrassMesh->GetInstanceCount())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Índice %d fuera de rango para las instancias de GrassMesh."), i);
+			break;
+		}
+
+		bool bHide = !GrassBool[i]; // si el booleano es false, queremos ocultar
+
+		// ✅ Ocultamos solo esta instancia (solo en Unreal 5+)
+		//GrassMesh->SelectInstance(true,i)->;
+	}
+
 }
 
 void AMarching::GenerateFoliageInPoint()
@@ -488,8 +532,12 @@ void AMarching::MarchCube(FVector pos,float* cube,FIntPoint chunkCoordinates)
 				int newIndex = Chunks[chunkCoordinates]->GetVertices().Num() - 1;
 				Chunks[chunkCoordinates]->GetVertexMap().Add(snapped, newIndex);
 				vertIndices[j] = newIndex;
-				//generar aqui el folliage ,tener refs de las instancias
-
+				if (color<=0)Chunks[chunkCoordinates]->GetMeshBoolean().Add(false);
+				else Chunks[chunkCoordinates]->GetMeshBoolean().Add(true);
+				
+				//generar aqui el folliage ,te
+				//ner refs de las instancias
+				
 				//si el color2 es distinto de 0 no generar foliage aqui
 				
 
@@ -551,7 +599,7 @@ void AMarching::IterateChunkVoxels(int i, int j, FIntPoint LocalChunkSize)
 	}
 }
 
-void AMarching::CubeIteration()
+void AMarching::CubeIteration(bool genFoliage)
 {
 	for (int i = 0; i < NumChunks.X; i++)
 	{
@@ -568,6 +616,7 @@ void AMarching::CubeIteration()
 			
 				IterateChunkVoxels(i, j, LocalChunkSize);
 				BuildMesh(FIntPoint(i, j));
+				if (genFoliage)
 				GenerateFoliage(FIntPoint(i, j));
 				
 			}

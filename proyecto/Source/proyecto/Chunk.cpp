@@ -16,6 +16,7 @@ void Chunk::resetMeshData()
 	Triangles.Empty();
 	VertexMap.Empty();
 	vertexColors.Empty();
+	MeshBoolean.Empty();
 
 	
 }
@@ -38,6 +39,11 @@ TArray<float>& Chunk::GetTerrainMap()
 TArray<FVector>& Chunk::GetVertices()
 {
 	return Vertices;
+}
+
+TArray<bool>& Chunk::GetMeshBoolean()
+{
+	return MeshBoolean;
 }
 
 FIntPoint& Chunk::GetChunkLocalSize()
