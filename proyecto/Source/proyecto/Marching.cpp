@@ -501,7 +501,7 @@ void AMarching::MarchCube(FVector pos,float* cube,FIntPoint chunkCoordinates)
 			float noise2 = TerrainMap[getTerrainIndex(vert2.X, vert2.Y, vert2.Z)].value;
 			float color1 = TerrainMap[getTerrainIndex(vert1.X, vert1.Y, vert1.Z)].vertexColor;
 			float color2 = TerrainMap[getTerrainIndex(vert2.X, vert2.Y, vert2.Z)].vertexColor;
-			float color=color1+color2/2.0f;
+			float color=FMath::Max(color1,color2);
 			float t = (SurfaceLevel - noise1) / (noise2 - noise1);
 			FVector vertice = FMath::Lerp(vert1, vert2, t);
 			FVector snapped = vertice.GridSnap(0.01f);
@@ -518,15 +518,7 @@ void AMarching::MarchCube(FVector pos,float* cube,FIntPoint chunkCoordinates)
 				int newIndex = Chunks[chunkCoordinates]->GetVertices().Num() - 1;
 				Chunks[chunkCoordinates]->GetVertexMap().Add(snapped, newIndex);
 				vertIndices[j] = newIndex;
-				// if (color<=0)Chunks[chunkCoordinates]->GetMeshBoolean().Add(false);
-				// else Chunks[chunkCoordinates]->GetMeshBoolean().Add(true);
-				
-				
-				
-
-
-				
-				
+	
 			}
 
 			edgeIndex++;

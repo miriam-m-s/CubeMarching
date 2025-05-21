@@ -2,7 +2,8 @@
 
 
 #include "RayCastClicker.h"
-
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
 #include "ExpandingSphere.h"
 #include "Marching.h"
 
@@ -70,6 +71,17 @@ void ARayCastClicker::HandleMouseClick()
 
 			if (Terrain)
 			{
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+				GetWorld(),
+				ClickEffect,
+				HitLocation,
+				FRotator::ZeroRotator,
+				FVector(1.0f), // Escala
+				true,          // AutoDestroy
+				true,          // AutoActivate
+				ENCPoolMethod::None,
+				true           // PreciseLocation
+			);
 				Terrain->GenerateHole(HitLocation);
 				// FActorSpawnParameters SpawnParams;
 				// GetWorld()->SpawnActor<AExpandingSphere>(AExpandingSphere::StaticClass(), HitLocation, FRotator::ZeroRotator, SpawnParams);

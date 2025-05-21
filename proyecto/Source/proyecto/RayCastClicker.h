@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "RayCastClicker.generated.h"
-
+class UNiagaraSystem;
 UCLASS()
 class PROYECTO_API ARayCastClicker : public AActor
 {
@@ -14,6 +14,8 @@ class PROYECTO_API ARayCastClicker : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ARayCastClicker();
+	UPROPERTY(EditAnywhere, Category = "VFX")
+	UNiagaraSystem* ClickEffect;
 
 protected:
 	// Called when the game starts or when spawned
