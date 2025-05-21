@@ -75,9 +75,9 @@ private:
 	bool IsInBounds(int x, int y, int z) const;
 	void ApplySphericalHole(int centerX, int centerY, int centerZ, int radius);
 	void GenerateFoliage(FIntPoint chunkCoordinates);
-	void DeleteFoliage(FIntPoint chunkCoordinates);
+	
 
-	void GenerateFoliageInPoint();
+
 	/**
 	 * Generates the scalar field values (density) used for terrain generation.
 	 * Typically fills an array with values based on a noise function like Perlin or Simplex.

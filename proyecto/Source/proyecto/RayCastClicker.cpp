@@ -3,6 +3,7 @@
 
 #include "RayCastClicker.h"
 
+#include "ExpandingSphere.h"
 #include "Marching.h"
 
 // Sets default values
@@ -70,6 +71,9 @@ void ARayCastClicker::HandleMouseClick()
 			if (Terrain)
 			{
 				Terrain->GenerateHole(HitLocation);
+				// FActorSpawnParameters SpawnParams;
+				// GetWorld()->SpawnActor<AExpandingSphere>(AExpandingSphere::StaticClass(), HitLocation, FRotator::ZeroRotator, SpawnParams);
+
 			}
 			else
 			{

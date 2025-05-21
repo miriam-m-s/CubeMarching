@@ -14,9 +14,10 @@ class Chunk
 	FIntPoint chunkLocalSize;
 	UInstancedStaticMeshComponent* GrassMesh;
 	TArray<FLinearColor> vertexColors;
+
 public:
 	Chunk();
-
+	TArray<FVector> GrassInstancePositions;
 	void resetMeshData();
 	// Métodos para acceder por referencia
 	UProceduralMeshComponent*& GetMesh();

@@ -39,6 +39,11 @@ void AMarching::GenerateHole(FVector HitLocation)
 	const int Radius = 5;
 	ApplySphericalHole(centerX, centerY, centerZ, Radius);
 
+
+
+	
+
+
 	// Recalculo del chunk afectado
 
 	// TODO: que se pongan todos los chunks que afecta el radio total
@@ -50,19 +55,47 @@ void AMarching::GenerateHole(FVector HitLocation)
 	Chunk* CurrentChunk = Chunks[chunkCoord];
 	if (!CurrentChunk)return;
 	if (CurrentChunk->GetMesh())CurrentChunk->GetMesh()->DestroyComponent();
-	if (CurrentChunk->GetGrassMesh())
+	// if (CurrentChunk->GetGrassMesh())
+	// {
+	// 	CurrentChunk->GetGrassMesh()->ClearInstances();
+	// 	CurrentChunk->GetGrassMesh()->DestroyComponent();
+	// 	CurrentChunk->GetGrassMesh()=nullptr;
+	// }
+	// CurrentChunk->GetGrassMesh() = NewObject<UInstancedStaticMeshComponent>(this);
+	// if (!CurrentChunk->GetGrassMesh())
+	// {
+	// 	UE_LOG(LogTemp, Error, TEXT("No se pudo crear el componente de césped."));
+	// 	return;
+	// }
+
+
+	UInstancedStaticMeshComponent* GrassMesh = CurrentChunk->GetGrassMesh();
+	if (GrassMesh)
 	{
-		CurrentChunk->GetGrassMesh()->ClearInstances();
-		CurrentChunk->GetGrassMesh()->DestroyComponent();
-		CurrentChunk->GetGrassMesh()=nullptr;
+		TArray<int32> IndicesToRemove;
+
+		for (int32 i = 0; i < CurrentChunk->GrassInstancePositions.Num(); ++i)
+		{
+			FVector GrassPos = CurrentChunk->GrassInstancePositions[i];
+			float distSq = FVector::DistSquared(GrassPos, HitLocation);
+			if (distSq <= FMath::Square(Radius * TriangleScale))  // Usa escala
+			{
+				IndicesToRemove.Add(i);
+			}
+		}
+
+		// Elimina en orden inverso para evitar que los índices cambien
+		IndicesToRemove.Sort(TGreater<int32>());
+		for (int32 i : IndicesToRemove)
+		{
+			GrassMesh->RemoveInstance(i);
+			CurrentChunk->GrassInstancePositions.RemoveAt(i);
+			CurrentChunk->GetMeshid().RemoveAt(i);
+		}
 	}
-	CurrentChunk->GetGrassMesh() = NewObject<UInstancedStaticMeshComponent>(this);
-	if (!CurrentChunk->GetGrassMesh())
-	{
-		UE_LOG(LogTemp, Error, TEXT("No se pudo crear el componente de césped."));
-		return;
-	}
-	Chunks[chunkCoord]->GetGrassMesh()->RegisterComponent();
+
+	
+	
 	UProceduralMeshComponent* NewMesh = NewObject<UProceduralMeshComponent>(this);
 	NewMesh->RegisterComponent();
 	NewMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
@@ -73,7 +106,7 @@ void AMarching::GenerateHole(FVector HitLocation)
 	BuildMesh(chunkCoord);
 
 
-	DeleteFoliage(chunkCoord);
+
 
 
 }
@@ -277,62 +310,27 @@ void AMarching::GenerateFoliage(FIntPoint chunkCoordinates)
 	CurrentChunk->GetGrassMesh()->SetCastShadow(false);
 	const TArray<FVector>& Vertices = CurrentChunk->GetVertices();
 	UE_LOG(LogTemp, Warning, TEXT("Chunk tiene %d vértices."), Vertices.Num());
-
+	FMeshInstanceDATA ChosenMesh = StaticMeshes[FMath::RandRange(0, StaticMeshes.Num() - 1)];
+	GrassMesh->SetStaticMesh(ChosenMesh.Mesh);
+	GrassMesh->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 	int count = 0;
+	CurrentChunk->GrassInstancePositions.Empty();  // Limpia si ya tenía
+
 	for (const FVector& Vertex : Vertices)
 	{
-		FMeshInstanceDATA ChosenMesh = StaticMeshes[FMath::RandRange(0, StaticMeshes.Num() - 1)];
-		GrassMesh->SetStaticMesh(ChosenMesh.Mesh);
-		GrassMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		FVector WorldLocation = Vertex;
 
 		FTransform InstanceTransform;
 		InstanceTransform.SetLocation(WorldLocation);
 		InstanceTransform.SetRotation(FQuat::MakeFromEuler(FVector(0, 0, FMath::RandRange(0.f, 360.f))));
-		float randScaleConstant=FMath::RandRange(ChosenMesh.MinScale, ChosenMesh.MaxScale);
-		InstanceTransform.SetScale3D(FVector(randScaleConstant,randScaleConstant,randScaleConstant));
+		float randScaleConstant = FMath::RandRange(ChosenMesh.MinScale, ChosenMesh.MaxScale);
+		InstanceTransform.SetScale3D(FVector(randScaleConstant, randScaleConstant, randScaleConstant));
 
-		int32 grss=GrassMesh->AddInstance(InstanceTransform);
-		CurrentChunk->GetMeshid().Add(grss);
-		count++;
+		int32 GrassId = GrassMesh->AddInstance(InstanceTransform);
+		CurrentChunk->GetMeshid().Add(GrassId);
+		CurrentChunk->GrassInstancePositions.Add(WorldLocation);  // <-- Guarda la posición
 	}
 
-	
-}
-
-void AMarching::DeleteFoliage(FIntPoint chunkCoordinates)
-{
-	
-	if (StaticMeshes.Num() <= 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No hay mallas asignadas en StaticMeshes."));
-		return;
-	}
-
-	if (!Chunks.Contains(chunkCoordinates))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Chunk no encontrado en la posición (%d, %d)."), chunkCoordinates.X, chunkCoordinates.Y);
-		return;
-	}
-
-	Chunk* CurrentChunk = Chunks[chunkCoordinates];
-	if (!CurrentChunk)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Chunk encontrado es nulo."));
-		return;
-	}
-
-	UInstancedStaticMeshComponent* GrassMesh = CurrentChunk->GetGrassMesh();
-	GrassMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-
-	const TArray<bool>& GrassBool = CurrentChunk->GetMeshBoolean();
-
-	
-
-}
-
-void AMarching::GenerateFoliageInPoint()
-{
 	
 }
 
@@ -374,7 +372,6 @@ void AMarching::CreateTerrain()
 				float height = FMath::PerlinNoise2D(FVector2D((x / 16.f * 1.5f + 0.001f)*noiseScale, (y / 16.f * 1.5f + 0.001f)*noiseScale));
 				height = (height + 1.f) * 0.5f; // Remap [-1,1] to [0,1]
 				height *= GridSize.Z; // Escalar a la altura máxima
-				if (x==5 && y==5)height=0;
 				for (int z = 0; z < GridSize.Z + 1; z++)
 				{
 				
@@ -521,13 +518,10 @@ void AMarching::MarchCube(FVector pos,float* cube,FIntPoint chunkCoordinates)
 				int newIndex = Chunks[chunkCoordinates]->GetVertices().Num() - 1;
 				Chunks[chunkCoordinates]->GetVertexMap().Add(snapped, newIndex);
 				vertIndices[j] = newIndex;
-				if (color<=0)Chunks[chunkCoordinates]->GetMeshBoolean().Add(false);
-				else Chunks[chunkCoordinates]->GetMeshBoolean().Add(true);
+				// if (color<=0)Chunks[chunkCoordinates]->GetMeshBoolean().Add(false);
+				// else Chunks[chunkCoordinates]->GetMeshBoolean().Add(true);
 				
-				//generar aqui el folliage ,te
-				//ner refs de las instancias
 				
-				//si el color2 es distinto de 0 no generar foliage aqui
 				
 
 
