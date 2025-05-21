@@ -71,9 +71,9 @@ void AMarching::GenerateHole(FVector HitLocation)
 	
 	IterateChunkVoxels(chunkX,chunkY,CurrentChunk->GetChunkLocalSize());
 	BuildMesh(chunkCoord);
-	GenerateFoliage(chunkCoord);
 
-	
+
+	DeleteFoliage(chunkCoord);
 
 
 }
@@ -292,7 +292,8 @@ void AMarching::GenerateFoliage(FIntPoint chunkCoordinates)
 		float randScaleConstant=FMath::RandRange(ChosenMesh.MinScale, ChosenMesh.MaxScale);
 		InstanceTransform.SetScale3D(FVector(randScaleConstant,randScaleConstant,randScaleConstant));
 
-		GrassMesh->AddInstance(InstanceTransform);
+		int32 grss=GrassMesh->AddInstance(InstanceTransform);
+		CurrentChunk->GetMeshid().Add(grss);
 		count++;
 	}
 
@@ -301,6 +302,7 @@ void AMarching::GenerateFoliage(FIntPoint chunkCoordinates)
 
 void AMarching::DeleteFoliage(FIntPoint chunkCoordinates)
 {
+	
 	if (StaticMeshes.Num() <= 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No hay mallas asignadas en StaticMeshes."));
@@ -325,20 +327,7 @@ void AMarching::DeleteFoliage(FIntPoint chunkCoordinates)
 
 	const TArray<bool>& GrassBool = CurrentChunk->GetMeshBoolean();
 
-	// ✅ Recorremos instancias
-	for (int32 i = 0; i < GrassBool.Num(); ++i)
-	{
-		if (i >= GrassMesh->GetInstanceCount())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Índice %d fuera de rango para las instancias de GrassMesh."), i);
-			break;
-		}
-
-		bool bHide = !GrassBool[i]; // si el booleano es false, queremos ocultar
-
-		// ✅ Ocultamos solo esta instancia (solo en Unreal 5+)
-		//GrassMesh->SelectInstance(true,i)->;
-	}
+	
 
 }
 

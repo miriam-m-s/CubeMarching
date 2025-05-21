@@ -7,6 +7,8 @@ class Chunk
 	TArray<float> TerrainMap;
 	TArray<FVector> Vertices;
 	TArray<bool> MeshBoolean;
+	
+	TArray<int32> Meshid;
 	TArray<int32> Triangles;
 	TMap<FVector, int32> VertexMap;
 	FIntPoint chunkLocalSize;
@@ -24,6 +26,7 @@ public:
 	TArray<bool>& GetMeshBoolean();
 	FIntPoint& GetChunkLocalSize();
 	TArray<int32>& GetTriangles();
+	TArray<int32>& GetMeshid();
 	TArray<FLinearColor>& GetVertexColors();
 	TMap<FVector, int32>& GetVertexMap();
 

@@ -56,6 +56,11 @@ TArray<int32>& Chunk::GetTriangles()
 	return Triangles;
 }
 
+TArray<int32>& Chunk::GetMeshid()
+{
+	return Meshid;
+}
+
 TArray<FLinearColor>& Chunk::GetVertexColors()
 {
 	return vertexColors;
