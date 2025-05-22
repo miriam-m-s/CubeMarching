@@ -19,7 +19,7 @@ void ABurnActor::BeginPlay()
 
 	if (!NiagaraTemplate) return;
 	
-	FVector SpawnLocation = FVector(MeshComponent->GetComponentLocation().X, MeshComponent->GetComponentLocation().Y, 0.0f);
+	FVector SpawnLocation = FVector(MeshComponent->GetComponentLocation().X, MeshComponent->GetComponentLocation().Y, 100.0f);
 	
 	// Spawn and store the system
 	NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
@@ -28,7 +28,7 @@ void ABurnActor::BeginPlay()
 		SpawnLocation,
 		FRotator::ZeroRotator,
 		FVector(1.0f),
-		true, // bAutoDestroy
+		false, // bAutoDestroy
 		true, // bAutoActivate
 		ENCPoolMethod::None,
 		true  // bPreCullCheck
@@ -95,5 +95,6 @@ void ABurnActor::StartBurn()
 void ABurnActor::StopBurn()
 {
 	bIsBurning = false;
+	NiagaraComponent->Deactivate();
 	OnBurnFinished();
 }
