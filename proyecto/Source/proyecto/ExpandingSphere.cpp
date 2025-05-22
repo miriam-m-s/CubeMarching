@@ -1,5 +1,4 @@
-﻿#include "C:\Users\miria\OneDrive\Escritorio\Documentos\Unreal Projects\CubeMarching\proyecto\Intermediate\Build\Win64\x64\proyectoEditor\Development\UnrealEd\SharedPCH.UnrealEd.Project.ValApi.Cpp20.h"
-#include "ExpandingSphere.h"
+﻿#include "ExpandingSphere.h"
 #include "Components/SphereComponent.h"
 #include "DrawDebugHelpers.h"
 #include "GameFramework/Actor.h"
