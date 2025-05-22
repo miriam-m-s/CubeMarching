@@ -19,6 +19,9 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnBurnFinished();
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire Expansion")
+	class ARuntimeVirtualTextureVolume* RuntimeVirtualTextureVolume;
 
 public:
 	virtual void Tick(float DeltaTime) override;
@@ -26,8 +29,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Fire Expansion")
 	void StartBurn();
 
-	UFUNCTION(BlueprintCallable, Category = "Fire Expansion")
+	UFUNCTION(BlueprintCallable, Category = "Fire Expansion")	
 	void StopBurn();
+
+	inline void SetRVTVolume(ARuntimeVirtualTextureVolume* volume) { RuntimeVirtualTextureVolume = volume; };
 	
 protected:
 	

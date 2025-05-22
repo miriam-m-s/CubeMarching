@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "RayCastClicker.generated.h"
 class UNiagaraSystem;
+class ABurnActor;
+
 UCLASS()
 class PROYECTO_API ARayCastClicker : public AActor
 {
@@ -17,6 +19,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "VFX")
 	UNiagaraSystem* ClickEffect;
 
+	UPROPERTY(EditAnywhere, Category = "Burn Actor")
+	TSubclassOf<ABurnActor> BurnActorBP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Burn Actor")
+	class ARuntimeVirtualTextureVolume* RVTVolumeRef;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

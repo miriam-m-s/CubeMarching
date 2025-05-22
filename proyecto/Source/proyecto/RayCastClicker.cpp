@@ -2,6 +2,8 @@
 
 
 #include "RayCastClicker.h"
+
+#include "BurnActor.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
 #include "ExpandingSphere.h"
@@ -72,19 +74,32 @@ void ARayCastClicker::HandleMouseClick()
 			if (Terrain)
 			{
 				UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-				GetWorld(),
-				ClickEffect,
-				HitLocation,
-				FRotator::ZeroRotator,
-				FVector(1.0f), // Escala
-				true,          // AutoDestroy
-				true,          // AutoActivate
-				ENCPoolMethod::None,
-				true           // PreciseLocation
-			);
+					GetWorld(),
+					ClickEffect,
+					HitLocation,
+					FRotator::ZeroRotator,
+					FVector(1.0f), // Escala
+					true,          // AutoDestroy
+					true,          // AutoActivate
+					ENCPoolMethod::None,
+					true           // PreciseLocation
+				);
 				Terrain->GenerateHole(HitLocation);
 				// FActorSpawnParameters SpawnParams;
 				// GetWorld()->SpawnActor<AExpandingSphere>(AExpandingSphere::StaticClass(), HitLocation, FRotator::ZeroRotator, SpawnParams);
+				
+				if (BurnActorBP)
+				{
+					FActorSpawnParameters SpawnParams;
+					SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+					FVector SpawnLocation = FVector(HitLocation.X, HitLocation.Y,  HitLocation.Z + 500);
+					FRotator SpawnRotation = FRotator::ZeroRotator;
+
+					ABurnActor* Instancia = GetWorld()->SpawnActor<ABurnActor>(BurnActorBP, SpawnLocation, SpawnRotation, SpawnParams);
+					// Instancia->StartBurn();
+					Instancia->SetRVTVolume(RVTVolumeRef);
+				}
 
 			}
 			else
