@@ -43,67 +43,57 @@ void AMarching::GenerateHole(FVector HitLocation)
 
 	
 
+	int radiusInVoxels = Radius;
+	int minX = FMath::FloorToInt((centerX - radiusInVoxels) / float(ChunkSize.X));
+	int maxX = FMath::FloorToInt((centerX + radiusInVoxels) / float(ChunkSize.X));
+	int minY = FMath::FloorToInt((centerY - radiusInVoxels) / float(ChunkSize.Y));
+	int maxY = FMath::FloorToInt((centerY + radiusInVoxels) / float(ChunkSize.Y));
 
-	// Recalculo del chunk afectado
-
-	// TODO: que se pongan todos los chunks que afecta el radio total
-	
-	int chunkX = centerX / ChunkSize.X;
-	int chunkY = centerY / ChunkSize.Y;
-	FIntPoint chunkCoord(chunkX, chunkY);
-	if (!Chunks.Contains(chunkCoord)) return;
-	Chunk* CurrentChunk = Chunks[chunkCoord];
-	if (!CurrentChunk)return;
-	if (CurrentChunk->GetMesh())CurrentChunk->GetMesh()->DestroyComponent();
-	// if (CurrentChunk->GetGrassMesh())
-	// {
-	// 	CurrentChunk->GetGrassMesh()->ClearInstances();
-	// 	CurrentChunk->GetGrassMesh()->DestroyComponent();
-	// 	CurrentChunk->GetGrassMesh()=nullptr;
-	// }
-	// CurrentChunk->GetGrassMesh() = NewObject<UInstancedStaticMeshComponent>(this);
-	// if (!CurrentChunk->GetGrassMesh())
-	// {
-	// 	UE_LOG(LogTemp, Error, TEXT("No se pudo crear el componente de césped."));
-	// 	return;
-	// }
-
-
-	UInstancedStaticMeshComponent* GrassMesh = CurrentChunk->GetGrassMesh();
-	if (GrassMesh)
+	for (int chunkX = minX; chunkX <= maxX; ++chunkX)
 	{
-		TArray<int32> IndicesToRemove;
-
-		for (int32 i = 0; i < CurrentChunk->GrassInstancePositions.Num(); ++i)
+		for (int chunkY = minY; chunkY <= maxY; ++chunkY)
 		{
-			FVector GrassPos = CurrentChunk->GrassInstancePositions[i];
-			float distSq = FVector::DistSquared(GrassPos, HitLocation);
-			if (distSq <= FMath::Square(Radius * TriangleScale))  // Usa escala
+			FIntPoint chunkCoord(chunkX, chunkY);
+			if (!Chunks.Contains(chunkCoord)) continue;
+
+			Chunk* CurrentChunk = Chunks[chunkCoord];
+			if (!CurrentChunk) continue;
+
+			if (CurrentChunk->GetMesh()) CurrentChunk->GetMesh()->DestroyComponent();
+
+			UInstancedStaticMeshComponent* GrassMesh = CurrentChunk->GetGrassMesh();
+			if (GrassMesh)
 			{
-				IndicesToRemove.Add(i);
+				TArray<int32> IndicesToRemove;
+				for (int32 i = 0; i < CurrentChunk->GrassInstancePositions.Num(); ++i)
+				{
+					FVector GrassPos = CurrentChunk->GrassInstancePositions[i];
+					float distSq = FVector::DistSquared(GrassPos, HitLocation);
+					if (distSq <= FMath::Square(Radius * TriangleScale))
+					{
+						IndicesToRemove.Add(i);
+					}
+				}
+				IndicesToRemove.Sort(TGreater<int32>());
+				for (int32 i : IndicesToRemove)
+				{
+					GrassMesh->RemoveInstance(i);
+					CurrentChunk->GrassInstancePositions.RemoveAt(i);
+					CurrentChunk->GetMeshid().RemoveAt(i);
+				}
 			}
-		}
 
-		// Elimina en orden inverso para evitar que los índices cambien
-		IndicesToRemove.Sort(TGreater<int32>());
-		for (int32 i : IndicesToRemove)
-		{
-			GrassMesh->RemoveInstance(i);
-			CurrentChunk->GrassInstancePositions.RemoveAt(i);
-			CurrentChunk->GetMeshid().RemoveAt(i);
+			// Recrear malla
+			UProceduralMeshComponent* NewMesh = NewObject<UProceduralMeshComponent>(this);
+			NewMesh->RegisterComponent();
+			NewMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+			CurrentChunk->GetMesh() = NewMesh;
+			CurrentChunk->resetMeshData();
+
+			IterateChunkVoxels(chunkX, chunkY, CurrentChunk->GetChunkLocalSize());
+			BuildMesh(chunkCoord);
 		}
 	}
-
-	
-	
-	UProceduralMeshComponent* NewMesh = NewObject<UProceduralMeshComponent>(this);
-	NewMesh->RegisterComponent();
-	NewMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-	CurrentChunk->GetMesh() = NewMesh;
-	CurrentChunk->resetMeshData();
-	
-	IterateChunkVoxels(chunkX,chunkY,CurrentChunk->GetChunkLocalSize());
-	BuildMesh(chunkCoord);
 
 
 
@@ -446,9 +436,9 @@ void AMarching::BuildMesh(FIntPoint   chunkCoordinates)
 	// float R = FMath::FRand(); // Valor entre 0.0 y 1.0
 	// float G = FMath::FRand();
 	// float B = FMath::FRand();
-
-	
-
+	//
+	// TArray<FLinearColor> linear;
+	// linear.Init(FLinearColor(R, G, B), CurrentChunk->GetVertices().Num());
 	// UE_LOG(LogTemp, Warning, TEXT("Calling CreateMeshSection_LinearColor"));
 	// Crea la malla usando los datos
 	CurrentChunk->GetMesh()->CreateMeshSection_LinearColor(0, CurrentChunk->GetVertices(),CurrentChunk->GetTriangles(), normals, uvs, CurrentChunk->GetVertexColors(), tangents, CollisionMesh);
