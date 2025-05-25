@@ -3,10 +3,10 @@
 
 #include "RayCastClicker.h"
 
-#include "BurnActor.h"
+#include "../BurnActor.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
-#include "ExpandingSphere.h"
+
 #include "Marching.h"
 
 // Sets default values
